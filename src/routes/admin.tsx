@@ -87,7 +87,7 @@ function AdminPage() {
             alerts={alerts}
           />
           <main className="flex-1 min-w-0 overflow-x-hidden">
-          <div className="mx-auto w-full max-w-[1080px] px-3 sm:px-4 py-4 sm:py-6 space-y-4">
+          <div className={`mx-auto w-full ${activeTab === "analytics" ? "max-w-[1600px]" : "max-w-[1080px]"} px-3 sm:px-4 py-4 sm:py-6 space-y-4`}>
           <div className="relative overflow-hidden rounded-2xl p-4 border border-primary/30 shadow-luxury bg-gradient-to-br from-card/90 via-card/70 to-primary/10 backdrop-blur-xl">
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-gold" />
             <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
