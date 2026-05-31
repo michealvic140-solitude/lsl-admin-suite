@@ -2640,7 +2640,7 @@ function setActiveTabFromAnalytics(_nav: any, _tab: string) {
   window.dispatchEvent(ev);
 }
 
-function MetricSquare({ icon: Icon, value, title, sub, tone, compact }: { icon: any; value: any; title: string; sub?: string; tone?: string; compact?: boolean }) {
+function MetricSquare({ icon: Icon, value, title, sub, tone, compact, onClick }: { icon: any; value: any; title: string; sub?: string; tone?: string; compact?: boolean; onClick?: () => void }) {
   const valueClass = tone === "gold-lg"
     ? "text-[10px] sm:text-base font-black text-primary leading-tight"
     : tone === "amber"
@@ -2648,15 +2648,26 @@ function MetricSquare({ icon: Icon, value, title, sub, tone, compact }: { icon: 
     : compact
     ? "text-xs sm:text-lg font-black text-primary leading-none"
     : "text-base sm:text-2xl font-black text-primary leading-none";
-  return (
-    <Card className="border-primary/20 bg-card/60 p-1.5 sm:p-3 flex flex-col justify-between min-h-[68px] sm:min-h-[100px] hover:border-primary/50 transition cursor-pointer">
+  const content = (
+    <>
       <Icon className="h-2.5 w-2.5 sm:h-4 sm:w-4 text-primary/70 mb-0.5" />
       <div className={valueClass}>{value}</div>
       <div className="mt-0.5">
         <div className="text-[6px] sm:text-[9px] uppercase tracking-wider text-muted-foreground leading-tight font-semibold">{title}</div>
         {sub && <div className="text-[5px] sm:text-[8px] uppercase tracking-wider text-muted-foreground/70 leading-tight">{sub}</div>}
       </div>
-    </Card>
+    </>
+  );
+  const baseCls = "border-primary/20 bg-card/60 p-1.5 sm:p-3 flex flex-col justify-between min-h-[68px] sm:min-h-[100px] hover:border-primary/50 hover:bg-primary/10 active:scale-95 transition cursor-pointer text-left w-full";
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={`rounded-xl border shadow ${baseCls}`}>
+        {content}
+      </button>
+    );
+  }
+  return (
+    <Card className={baseCls}>{content}</Card>
   );
 }
 
