@@ -2536,47 +2536,49 @@ function AnalyticsPanel() {
         <PanelBlock title="RECENT ACTIVITY" onView={() => setActiveTabFromAnalytics(nav, "activity")}>
           {activity.length === 0 && <div className="text-[10px] text-muted-foreground">No activity yet</div>}
           {activity.map((a, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0">
+            <button key={i} onClick={() => setActiveTabFromAnalytics(nav, "audit")} className="w-full text-left flex items-start gap-1.5 text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0 hover:bg-primary/5 rounded transition">
               <Sparkles className="h-3 w-3 text-primary shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
                 <div className="text-foreground truncate">{a.action?.replace(/_/g, " ")}</div>
                 <div className="text-muted-foreground text-[8px] sm:text-[10px]">{ts(a.created_at)}</div>
               </div>
-            </div>
+            </button>
           ))}
         </PanelBlock>
         <PanelBlock title="LIVE GANG WARS" onView={() => nav({ to: "/matches" })}>
           {liveMatches.length === 0 && <div className="text-[10px] text-muted-foreground">No live wars</div>}
           {liveMatches.map((m) => (
-            <div key={m.id} className="flex items-center justify-between text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0">
-              <span className="truncate text-foreground">{m.name}</span>
+            <button key={m.id} onClick={() => nav({ to: "/matches/$matchId", params: { matchId: m.id } })} className="w-full flex items-center justify-between text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0 hover:bg-primary/5 rounded px-1 transition">
+              <span className="truncate text-foreground text-left">{m.name}</span>
               <Badge variant="outline" className="text-[8px] border-primary/40 text-primary px-1 py-0">{m.status}</Badge>
-            </div>
+            </button>
           ))}
         </PanelBlock>
-        <PanelBlock title="HIGHLIGHTS HUB" onView={() => nav({ to: "/" })}>
+        <PanelBlock title="HIGHLIGHTS HUB" onView={() => setActiveTabFromAnalytics(nav, "content")}>
           {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center gap-1.5 text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0">
+            <button key={i} onClick={() => setActiveTabFromAnalytics(nav, "content")} className="w-full flex items-center gap-1.5 text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0 hover:bg-primary/5 rounded px-1 transition">
               <Play className="h-3 w-3 text-primary shrink-0" />
-              <div className="min-w-0 flex-1 truncate">Highlight #{i}</div>
-            </div>
+              <div className="min-w-0 flex-1 truncate text-left">Highlight #{i}</div>
+            </button>
           ))}
         </PanelBlock>
       </div>
 
       {/* ROW 8 — Event Countdown | Broadcast Center | Quick Actions */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        <PanelBlock title="EVENT COUNTDOWN">
-          <div className="text-[9px] sm:text-xs font-bold text-primary">{event?.title ?? "No active event"}</div>
-          <div className="text-[8px] sm:text-[10px] text-muted-foreground">{event?.starts_at ? new Date(event.starts_at).toLocaleString() : "—"}</div>
+        <PanelBlock title="EVENT COUNTDOWN" onView={() => setActiveTabFromAnalytics(nav, "events")}>
+          <button onClick={() => setActiveTabFromAnalytics(nav, "events")} className="w-full text-left hover:bg-primary/5 rounded p-1 transition">
+            <div className="text-[9px] sm:text-xs font-bold text-primary">{event?.title ?? "No active event"}</div>
+            <div className="text-[8px] sm:text-[10px] text-muted-foreground">{event?.starts_at ? new Date(event.starts_at).toLocaleString() : "—"}</div>
+          </button>
         </PanelBlock>
         <PanelBlock title="BROADCAST CENTER" onView={() => setActiveTabFromAnalytics(nav, "broadcast")}>
           {broadcasts.length === 0 && <div className="text-[10px] text-muted-foreground">No broadcasts</div>}
           {broadcasts.map((b) => (
-            <div key={b.id} className="text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0">
+            <button key={b.id} onClick={() => setActiveTabFromAnalytics(nav, "broadcast")} className="w-full text-left text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0 hover:bg-primary/5 rounded px-1 transition">
               <div className="truncate text-foreground">{b.title || b.body?.slice(0, 30)}</div>
               <div className="text-[8px] sm:text-[10px] text-muted-foreground">{ts(b.created_at)}</div>
-            </div>
+            </button>
           ))}
         </PanelBlock>
         <PanelBlock title="QUICK ACTIONS">
