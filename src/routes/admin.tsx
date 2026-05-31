@@ -72,6 +72,14 @@ function AdminPage() {
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [isAdmin]);
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (typeof detail === "string") setActiveTab(detail);
+    };
+    window.addEventListener("admin:set-tab", handler);
+    return () => window.removeEventListener("admin:set-tab", handler);
+  }, []);
   if (loading) return <Layout><div className="container py-10">Loading…</div></Layout>;
   if (!isAdmin && !isMod) return null;
 
@@ -2415,38 +2423,39 @@ function AnalyticsPanel() {
     return String(n);
   };
 
+  const goTab = (t: string) => setActiveTabFromAnalytics(nav, t);
   const row1 = [
-    { icon: Users, value: stats.totalUsers, title: "USERS", sub: "TOTAL USERS", tone: "gold" },
-    { icon: Trophy, value: counts.gangWars ?? 0, title: "GANG WARS", sub: "LIVE & UPCOMING", tone: "gold" },
-    { icon: AlertTriangle, value: counts.pendingTotal ?? 0, title: "PENDING REQUESTS", sub: "AWAITING ACTION", tone: "amber" },
-    { icon: Coins, value: short(stats.circulating), title: "TOTAL VOLUME", sub: "IN CIRCULATION", tone: "gold-lg" },
-    { icon: Calendar, value: counts.openTickets ?? 0, title: "OPEN REPORTS", sub: "REPORTED ITEMS", tone: "gold" },
+    { icon: Users, value: stats.totalUsers, title: "USERS", sub: "TOTAL USERS", tone: "gold", onClick: () => goTab("users") },
+    { icon: Trophy, value: counts.gangWars ?? 0, title: "GANG WARS", sub: "LIVE & UPCOMING", tone: "gold", onClick: () => goTab("matches") },
+    { icon: AlertTriangle, value: counts.pendingTotal ?? 0, title: "PENDING REQUESTS", sub: "AWAITING ACTION", tone: "amber", onClick: () => goTab("tokens") },
+    { icon: Coins, value: short(stats.circulating), title: "TOTAL VOLUME", sub: "IN CIRCULATION", tone: "gold-lg", onClick: () => goTab("pnl") },
+    { icon: Calendar, value: counts.openTickets ?? 0, title: "OPEN REPORTS", sub: "REPORTED ITEMS", tone: "gold", onClick: () => goTab("tickets") },
   ];
   const row2 = [
-    { icon: Ticket, value: counts.bookedTickets ?? 0, title: "TICKETS BOOKED", sub: "TOTAL BOOKED" },
-    { icon: Coins, value: counts.pendingTokens ?? 0, title: "TOKEN REQUESTS", sub: "REQUESTED TOKENS" },
-    { icon: Wallet, value: counts.pendingWithdrawals ?? 0, title: "WITHDRAWALS", sub: "PENDING PAYOUTS" },
-    { icon: Tag, value: counts.pendingPromos ?? 0, title: "PROMO REQUESTS", sub: "PENDING PROMOS" },
-    { icon: AlertTriangle, value: counts.pendingAppeals ?? 0, title: "BAN APPEALS", sub: "PENDING APPEALS" },
+    { icon: Ticket, value: counts.bookedTickets ?? 0, title: "TICKETS BOOKED", sub: "TOTAL BOOKED", onClick: () => goTab("bettracker") },
+    { icon: Coins, value: counts.pendingTokens ?? 0, title: "TOKEN REQUESTS", sub: "REQUESTED TOKENS", onClick: () => goTab("tokens") },
+    { icon: Wallet, value: counts.pendingWithdrawals ?? 0, title: "WITHDRAWALS", sub: "PENDING PAYOUTS", onClick: () => goTab("withdrawals") },
+    { icon: Tag, value: counts.pendingPromos ?? 0, title: "PROMO REQUESTS", sub: "PENDING PROMOS", onClick: () => goTab("promoreqs") },
+    { icon: AlertTriangle, value: counts.pendingAppeals ?? 0, title: "BAN APPEALS", sub: "PENDING APPEALS", onClick: () => goTab("appeals") },
   ];
   const row4 = [
-    { icon: Users, value: stats.totalUsers, title: "TOTAL USERS" },
-    { icon: Shield, value: stats.bannedUsers, title: "BANNED USERS" },
-    { icon: Coins, value: short(stats.circulating), title: "TOKENS CIRCULATING" },
-    { icon: Ticket, value: stats.totalBets, title: "TOTAL BETS" },
-    { icon: Trophy, value: stats.wonBets, title: "WON BETS" },
+    { icon: Users, value: stats.totalUsers, title: "TOTAL USERS", onClick: () => goTab("users") },
+    { icon: Shield, value: stats.bannedUsers, title: "BANNED USERS", onClick: () => goTab("users") },
+    { icon: Coins, value: short(stats.circulating), title: "TOKENS CIRCULATING", onClick: () => goTab("pnl") },
+    { icon: Ticket, value: stats.totalBets, title: "TOTAL BETS", onClick: () => goTab("bettracker") },
+    { icon: Trophy, value: stats.wonBets, title: "WON BETS", onClick: () => goTab("bettracker") },
   ];
   const row5 = [
-    { icon: X, value: stats.lostBets, title: "LOST BETS" },
-    { icon: Eye, value: stats.openBets, title: "OPEN BETS" },
-    { icon: Coins, value: short(stats.totalStaked), title: "TOTAL STAKED" },
-    { icon: Wallet, value: short(stats.totalPaid), title: "TOTAL PAID OUT" },
-    { icon: BarChart3, value: short(stats.houseEdge), title: "NET (HOUSE)" },
+    { icon: X, value: stats.lostBets, title: "LOST BETS", onClick: () => goTab("bettracker") },
+    { icon: Eye, value: stats.openBets, title: "OPEN BETS", onClick: () => goTab("bettracker") },
+    { icon: Coins, value: short(stats.totalStaked), title: "TOTAL STAKED", onClick: () => goTab("pnl") },
+    { icon: Wallet, value: short(stats.totalPaid), title: "TOTAL PAID OUT", onClick: () => goTab("pnl") },
+    { icon: BarChart3, value: short(stats.houseEdge), title: "NET (HOUSE)", onClick: () => goTab("pnl") },
   ];
   const row6 = [
-    { icon: Check, value: short(stats.approvedRequests), title: "TOKENS APPROVED" },
-    { icon: Coins, value: short(stats.credits), title: "TOKEN CREDITS" },
-    { icon: Coins, value: short(stats.debits), title: "TOKEN DEBITS" },
+    { icon: Check, value: short(stats.approvedRequests), title: "TOKENS APPROVED", onClick: () => goTab("tokens") },
+    { icon: Coins, value: short(stats.credits), title: "TOKEN CREDITS", onClick: () => goTab("tokens") },
+    { icon: Coins, value: short(stats.debits), title: "TOKEN DEBITS", onClick: () => goTab("tokens") },
   ];
 
   const ts = (ts: string) => {
@@ -2527,47 +2536,49 @@ function AnalyticsPanel() {
         <PanelBlock title="RECENT ACTIVITY" onView={() => setActiveTabFromAnalytics(nav, "activity")}>
           {activity.length === 0 && <div className="text-[10px] text-muted-foreground">No activity yet</div>}
           {activity.map((a, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0">
+            <button key={i} onClick={() => setActiveTabFromAnalytics(nav, "audit")} className="w-full text-left flex items-start gap-1.5 text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0 hover:bg-primary/5 rounded transition">
               <Sparkles className="h-3 w-3 text-primary shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
                 <div className="text-foreground truncate">{a.action?.replace(/_/g, " ")}</div>
                 <div className="text-muted-foreground text-[8px] sm:text-[10px]">{ts(a.created_at)}</div>
               </div>
-            </div>
+            </button>
           ))}
         </PanelBlock>
         <PanelBlock title="LIVE GANG WARS" onView={() => nav({ to: "/matches" })}>
           {liveMatches.length === 0 && <div className="text-[10px] text-muted-foreground">No live wars</div>}
           {liveMatches.map((m) => (
-            <div key={m.id} className="flex items-center justify-between text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0">
-              <span className="truncate text-foreground">{m.name}</span>
+            <button key={m.id} onClick={() => nav({ to: "/matches/$matchId", params: { matchId: m.id } })} className="w-full flex items-center justify-between text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0 hover:bg-primary/5 rounded px-1 transition">
+              <span className="truncate text-foreground text-left">{m.name}</span>
               <Badge variant="outline" className="text-[8px] border-primary/40 text-primary px-1 py-0">{m.status}</Badge>
-            </div>
+            </button>
           ))}
         </PanelBlock>
-        <PanelBlock title="HIGHLIGHTS HUB" onView={() => nav({ to: "/" })}>
+        <PanelBlock title="HIGHLIGHTS HUB" onView={() => setActiveTabFromAnalytics(nav, "content")}>
           {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center gap-1.5 text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0">
+            <button key={i} onClick={() => setActiveTabFromAnalytics(nav, "content")} className="w-full flex items-center gap-1.5 text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0 hover:bg-primary/5 rounded px-1 transition">
               <Play className="h-3 w-3 text-primary shrink-0" />
-              <div className="min-w-0 flex-1 truncate">Highlight #{i}</div>
-            </div>
+              <div className="min-w-0 flex-1 truncate text-left">Highlight #{i}</div>
+            </button>
           ))}
         </PanelBlock>
       </div>
 
       {/* ROW 8 — Event Countdown | Broadcast Center | Quick Actions */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        <PanelBlock title="EVENT COUNTDOWN">
-          <div className="text-[9px] sm:text-xs font-bold text-primary">{event?.title ?? "No active event"}</div>
-          <div className="text-[8px] sm:text-[10px] text-muted-foreground">{event?.starts_at ? new Date(event.starts_at).toLocaleString() : "—"}</div>
+        <PanelBlock title="EVENT COUNTDOWN" onView={() => setActiveTabFromAnalytics(nav, "events")}>
+          <button onClick={() => setActiveTabFromAnalytics(nav, "events")} className="w-full text-left hover:bg-primary/5 rounded p-1 transition">
+            <div className="text-[9px] sm:text-xs font-bold text-primary">{event?.title ?? "No active event"}</div>
+            <div className="text-[8px] sm:text-[10px] text-muted-foreground">{event?.starts_at ? new Date(event.starts_at).toLocaleString() : "—"}</div>
+          </button>
         </PanelBlock>
         <PanelBlock title="BROADCAST CENTER" onView={() => setActiveTabFromAnalytics(nav, "broadcast")}>
           {broadcasts.length === 0 && <div className="text-[10px] text-muted-foreground">No broadcasts</div>}
           {broadcasts.map((b) => (
-            <div key={b.id} className="text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0">
+            <button key={b.id} onClick={() => setActiveTabFromAnalytics(nav, "broadcast")} className="w-full text-left text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0 hover:bg-primary/5 rounded px-1 transition">
               <div className="truncate text-foreground">{b.title || b.body?.slice(0, 30)}</div>
               <div className="text-[8px] sm:text-[10px] text-muted-foreground">{ts(b.created_at)}</div>
-            </div>
+            </button>
           ))}
         </PanelBlock>
         <PanelBlock title="QUICK ACTIONS">
@@ -2631,7 +2642,7 @@ function setActiveTabFromAnalytics(_nav: any, _tab: string) {
   window.dispatchEvent(ev);
 }
 
-function MetricSquare({ icon: Icon, value, title, sub, tone, compact }: { icon: any; value: any; title: string; sub?: string; tone?: string; compact?: boolean }) {
+function MetricSquare({ icon: Icon, value, title, sub, tone, compact, onClick }: { icon: any; value: any; title: string; sub?: string; tone?: string; compact?: boolean; onClick?: () => void }) {
   const valueClass = tone === "gold-lg"
     ? "text-[10px] sm:text-base font-black text-primary leading-tight"
     : tone === "amber"
@@ -2639,15 +2650,26 @@ function MetricSquare({ icon: Icon, value, title, sub, tone, compact }: { icon: 
     : compact
     ? "text-xs sm:text-lg font-black text-primary leading-none"
     : "text-base sm:text-2xl font-black text-primary leading-none";
-  return (
-    <Card className="border-primary/20 bg-card/60 p-1.5 sm:p-3 flex flex-col justify-between min-h-[68px] sm:min-h-[100px] hover:border-primary/50 transition cursor-pointer">
+  const content = (
+    <>
       <Icon className="h-2.5 w-2.5 sm:h-4 sm:w-4 text-primary/70 mb-0.5" />
       <div className={valueClass}>{value}</div>
       <div className="mt-0.5">
         <div className="text-[6px] sm:text-[9px] uppercase tracking-wider text-muted-foreground leading-tight font-semibold">{title}</div>
         {sub && <div className="text-[5px] sm:text-[8px] uppercase tracking-wider text-muted-foreground/70 leading-tight">{sub}</div>}
       </div>
-    </Card>
+    </>
+  );
+  const baseCls = "border-primary/20 bg-card/60 p-1.5 sm:p-3 flex flex-col justify-between min-h-[68px] sm:min-h-[100px] hover:border-primary/50 hover:bg-primary/10 active:scale-95 transition cursor-pointer text-left w-full";
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={`rounded-xl border shadow ${baseCls}`}>
+        {content}
+      </button>
+    );
+  }
+  return (
+    <Card className={baseCls}>{content}</Card>
   );
 }
 
