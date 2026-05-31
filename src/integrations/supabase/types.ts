@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      ads: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          link_url: string | null
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          link_url?: string | null
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          link_url?: string | null
+          title?: string | null
+        }
+        Relationships: []
+      }
       advertisements: {
         Row: {
           created_at: string
@@ -74,10 +101,13 @@ export type Database = {
           contact_email: string | null
           contact_phone: string | null
           contact_whatsapp: string | null
+          daily_login_reward: number | null
+          force_reload_at: string | null
           hero_tagline: string | null
           id: number
           maintenance_message: string | null
           maintenance_mode: boolean
+          max_payout: number | null
           min_stake: number
           popup_ad_active: boolean
           popup_ad_image: string | null
@@ -86,17 +116,24 @@ export type Database = {
           popup_ad_text: string | null
           terms_content: string | null
           updated_at: string
+          virtual_cycle_seconds: number | null
+          virtual_enabled: boolean | null
           why_trust_us: string | null
+          xp_per_bet: number | null
+          xp_per_win: number | null
         }
         Insert: {
           about_us?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           contact_whatsapp?: string | null
+          daily_login_reward?: number | null
+          force_reload_at?: string | null
           hero_tagline?: string | null
           id?: number
           maintenance_message?: string | null
           maintenance_mode?: boolean
+          max_payout?: number | null
           min_stake?: number
           popup_ad_active?: boolean
           popup_ad_image?: string | null
@@ -105,17 +142,24 @@ export type Database = {
           popup_ad_text?: string | null
           terms_content?: string | null
           updated_at?: string
+          virtual_cycle_seconds?: number | null
+          virtual_enabled?: boolean | null
           why_trust_us?: string | null
+          xp_per_bet?: number | null
+          xp_per_win?: number | null
         }
         Update: {
           about_us?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           contact_whatsapp?: string | null
+          daily_login_reward?: number | null
+          force_reload_at?: string | null
           hero_tagline?: string | null
           id?: number
           maintenance_message?: string | null
           maintenance_mode?: boolean
+          max_payout?: number | null
           min_stake?: number
           popup_ad_active?: boolean
           popup_ad_image?: string | null
@@ -124,7 +168,11 @@ export type Database = {
           popup_ad_text?: string | null
           terms_content?: string | null
           updated_at?: string
+          virtual_cycle_seconds?: number | null
+          virtual_enabled?: boolean | null
           why_trust_us?: string | null
+          xp_per_bet?: number | null
+          xp_per_win?: number | null
         }
         Relationships: []
       }
@@ -134,6 +182,7 @@ export type Database = {
           actor_id: string | null
           created_at: string
           id: string
+          meta: Json | null
           metadata: Json | null
           target_id: string | null
           target_type: string | null
@@ -143,6 +192,7 @@ export type Database = {
           actor_id?: string | null
           created_at?: string
           id?: string
+          meta?: Json | null
           metadata?: Json | null
           target_id?: string | null
           target_type?: string | null
@@ -152,6 +202,7 @@ export type Database = {
           actor_id?: string | null
           created_at?: string
           id?: string
+          meta?: Json | null
           metadata?: Json | null
           target_id?: string | null
           target_type?: string | null
@@ -195,10 +246,12 @@ export type Database = {
           id: string
           locked_odds: number
           market_id: string
+          market_name: string | null
           match_id: string | null
           odd_id: string
           result: string | null
           selection_label: string
+          stake_share: number | null
         }
         Insert: {
           bet_id: string
@@ -206,10 +259,12 @@ export type Database = {
           id?: string
           locked_odds: number
           market_id: string
+          market_name?: string | null
           match_id?: string | null
           odd_id: string
           result?: string | null
           selection_label: string
+          stake_share?: number | null
         }
         Update: {
           bet_id?: string
@@ -217,10 +272,12 @@ export type Database = {
           id?: string
           locked_odds?: number
           market_id?: string
+          market_name?: string | null
           match_id?: string | null
           odd_id?: string
           result?: string | null
           selection_label?: string
+          stake_share?: number | null
         }
         Relationships: [
           {
@@ -298,6 +355,36 @@ export type Database = {
         }
         Relationships: []
       }
+      broadcasts: {
+        Row: {
+          audience: string | null
+          body: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          title: string
+        }
+        Insert: {
+          audience?: string | null
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          title: string
+        }
+        Update: {
+          audience?: string | null
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          title?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -318,6 +405,80 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      challenges: {
+        Row: {
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          id: string
+          is_active: boolean | null
+          kind: string | null
+          reward_tokens: number | null
+          reward_xp: number | null
+          starts_at: string | null
+          target: number | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          kind?: string | null
+          reward_tokens?: number | null
+          reward_xp?: number | null
+          starts_at?: string | null
+          target?: number | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          kind?: string | null
+          reward_tokens?: number | null
+          reward_xp?: number | null
+          starts_at?: string | null
+          target?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
+      chat_message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       chat_messages: {
         Row: {
@@ -382,6 +543,39 @@ export type Database = {
         }
         Relationships: []
       }
+      gang_emblems: {
+        Row: {
+          admin_note: string | null
+          created_at: string
+          id: string
+          image_url: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       highlights: {
         Row: {
           created_at: string
@@ -406,6 +600,54 @@ export type Database = {
           media_type?: string
           media_url?: string
           title?: string
+        }
+        Relationships: []
+      }
+      house_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          note: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind: string
+          note?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          note?: string | null
+        }
+        Relationships: []
+      }
+      house_wallet: {
+        Row: {
+          balance: number | null
+          id: number
+          is_paused: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          balance?: number | null
+          id?: number
+          is_paused?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          balance?: number | null
+          id?: number
+          is_paused?: boolean | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -566,6 +808,33 @@ export type Database = {
           },
         ]
       }
+      notification_prefs: {
+        Row: {
+          bet_updates: boolean | null
+          email_enabled: boolean | null
+          promo_updates: boolean | null
+          push_enabled: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bet_updates?: boolean | null
+          email_enabled?: boolean | null
+          promo_updates?: boolean | null
+          push_enabled?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bet_updates?: boolean | null
+          email_enabled?: boolean | null
+          promo_updates?: boolean | null
+          push_enabled?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -674,67 +943,112 @@ export type Database = {
           accepted_terms: boolean
           avatar_url: string | null
           ban_reason: string | null
+          chat_color: string | null
           country: string | null
           created_at: string
           discord_username: string | null
           email: string
+          emblem_status: string | null
+          force_logout_at: string | null
           full_name: string
+          gang_emblem_url: string | null
           gang_name: string | null
           gang_type: Database["public"]["Enums"]["gang_type"] | null
           id: string
+          ingame_name: string | null
           is_banned: boolean
           is_muted: boolean
           is_restricted: boolean
+          last_login_date: string | null
+          longest_streak: number | null
           mute_reason: string | null
           phone: string | null
+          profile_banner_url: string | null
+          profile_title: string | null
+          referral_code: string | null
+          referred_by: string | null
           restrict_reason: string | null
           server: string | null
+          showcase_achievement_ids: string[] | null
+          streak_days: number | null
           token_balance: number
           updated_at: string
+          vip_tier: number | null
+          xp: number | null
         }
         Insert: {
           accepted_terms?: boolean
           avatar_url?: string | null
           ban_reason?: string | null
+          chat_color?: string | null
           country?: string | null
           created_at?: string
           discord_username?: string | null
           email: string
+          emblem_status?: string | null
+          force_logout_at?: string | null
           full_name: string
+          gang_emblem_url?: string | null
           gang_name?: string | null
           gang_type?: Database["public"]["Enums"]["gang_type"] | null
           id: string
+          ingame_name?: string | null
           is_banned?: boolean
           is_muted?: boolean
           is_restricted?: boolean
+          last_login_date?: string | null
+          longest_streak?: number | null
           mute_reason?: string | null
           phone?: string | null
+          profile_banner_url?: string | null
+          profile_title?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           restrict_reason?: string | null
           server?: string | null
+          showcase_achievement_ids?: string[] | null
+          streak_days?: number | null
           token_balance?: number
           updated_at?: string
+          vip_tier?: number | null
+          xp?: number | null
         }
         Update: {
           accepted_terms?: boolean
           avatar_url?: string | null
           ban_reason?: string | null
+          chat_color?: string | null
           country?: string | null
           created_at?: string
           discord_username?: string | null
           email?: string
+          emblem_status?: string | null
+          force_logout_at?: string | null
           full_name?: string
+          gang_emblem_url?: string | null
           gang_name?: string | null
           gang_type?: Database["public"]["Enums"]["gang_type"] | null
           id?: string
+          ingame_name?: string | null
           is_banned?: boolean
           is_muted?: boolean
           is_restricted?: boolean
+          last_login_date?: string | null
+          longest_streak?: number | null
           mute_reason?: string | null
           phone?: string | null
+          profile_banner_url?: string | null
+          profile_title?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           restrict_reason?: string | null
           server?: string | null
+          showcase_achievement_ids?: string[] | null
+          streak_days?: number | null
           token_balance?: number
           updated_at?: string
+          vip_tier?: number | null
+          xp?: number | null
         }
         Relationships: []
       }
@@ -850,6 +1164,152 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string | null
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string | null
+          user_id: string
+        }
+        Insert: {
+          auth?: string | null
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string | null
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          bonus_paid: number | null
+          created_at: string
+          id: string
+          referred_id: string
+          referrer_id: string
+        }
+        Insert: {
+          bonus_paid?: number | null
+          created_at?: string
+          id?: string
+          referred_id: string
+          referrer_id: string
+        }
+        Update: {
+          bonus_paid?: number | null
+          created_at?: string
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+        }
+        Relationships: []
+      }
+      season_points: {
+        Row: {
+          created_at: string
+          id: string
+          points: number | null
+          season_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          points?: number | null
+          season_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          points?: number | null
+          season_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "season_points_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seasons: {
+        Row: {
+          banner_url: string | null
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          starts_at: string | null
+        }
+        Insert: {
+          banner_url?: string | null
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          starts_at?: string | null
+        }
+        Update: {
+          banner_url?: string | null
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          starts_at?: string | null
+        }
+        Relationships: []
+      }
+      spotlights: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          headline: string
+          id: string
+          is_active: boolean | null
+          message: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          headline: string
+          id?: string
+          is_active?: boolean | null
+          message?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          headline?: string
+          id?: string
+          is_active?: boolean | null
+          message?: string | null
+        }
+        Relationships: []
       }
       support_tickets: {
         Row: {
@@ -1015,6 +1475,62 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          achievement_key: string
+          awarded_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achievement_key: string
+          awarded_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_key?: string
+          awarded_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_challenge_progress: {
+        Row: {
+          challenge_id: string
+          claimed_at: string | null
+          created_at: string
+          id: string
+          progress: number | null
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          claimed_at?: string | null
+          created_at?: string
+          id?: string
+          progress?: number | null
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          claimed_at?: string | null
+          created_at?: string
+          id?: string
+          progress?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_challenge_progress_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           assigned_by: string | null
@@ -1038,6 +1554,161 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_sessions: {
+        Row: {
+          last_seen: string
+          route: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          last_seen?: string
+          route?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          last_seen?: string
+          route?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_tasks: {
+        Row: {
+          claimed_at: string | null
+          created_at: string
+          id: string
+          progress: number | null
+          task_key: string
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          created_at?: string
+          id?: string
+          progress?: number | null
+          task_key: string
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string | null
+          created_at?: string
+          id?: string
+          progress?: number | null
+          task_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      virtual_house_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          kind: string
+          note: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          kind: string
+          note?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          note?: string | null
+        }
+        Relationships: []
+      }
+      virtual_house_wallet: {
+        Row: {
+          balance: number | null
+          cycle_seconds: number | null
+          id: number
+          is_locked: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          balance?: number | null
+          cycle_seconds?: number | null
+          id?: number
+          is_locked?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          balance?: number | null
+          cycle_seconds?: number | null
+          id?: number
+          is_locked?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      virtual_payout_requests: {
+        Row: {
+          admin_note: string | null
+          amount: number
+          created_at: string
+          id: string
+          reviewed_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          amount: number
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          amount?: number
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      watchlist: {
+        Row: {
+          created_at: string
+          id: string
+          match_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watchlist_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       withdrawal_requests: {
         Row: {
@@ -1083,11 +1754,81 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      hot_bets_v1: {
+        Row: {
+          bet_id: string | null
+          created_at: string | null
+          id: string | null
+          market_name: string | null
+          match_id: string | null
+          match_name: string | null
+          odds: number | null
+          popularity: number | null
+          selection_label: string | null
+          stake_share: number | null
+          total_stake: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bet_selections_bet_id_fkey"
+            columns: ["bet_id"]
+            isOneToOne: false
+            referencedRelation: "bets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bet_selections_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      admin_adjust_xp: {
+        Args: { _delta: number; _user_id: string }
+        Returns: undefined
+      }
+      admin_broadcast: {
+        Args: { _audience?: string; _body: string; _title: string }
+        Returns: string
+      }
       admin_delete_bet: {
         Args: { _bet_id: string; _reason?: string; _refund?: boolean }
+        Returns: undefined
+      }
+      admin_exposure_per_match: {
+        Args: never
+        Returns: {
+          exposure: number
+          match_id: string
+        }[]
+      }
+      admin_kick_user: { Args: { _user_id: string }; Returns: undefined }
+      admin_lock_virtual_round: {
+        Args: { _locked: boolean }
+        Returns: undefined
+      }
+      admin_log_action: {
+        Args: {
+          _action: string
+          _meta?: Json
+          _target_id?: string
+          _target_type?: string
+        }
+        Returns: undefined
+      }
+      admin_pnl_summary: { Args: never; Returns: Json }
+      admin_refund_bet: { Args: { _bet_id: string }; Returns: Json }
+      admin_review_virtual_payout: {
+        Args: { _approve: boolean; _id: string; _note?: string }
+        Returns: undefined
+      }
+      admin_risk_summary: { Args: never; Returns: Json }
+      admin_set_virtual_cycle: {
+        Args: { _seconds: number }
         Returns: undefined
       }
       admin_suspend_bet: {
@@ -1095,11 +1836,16 @@ export type Database = {
         Returns: undefined
       }
       admin_unsuspend_bet: { Args: { _bet_id: string }; Returns: undefined }
+      admin_void_bet: { Args: { _bet_id: string }; Returns: Json }
+      apply_referral_code: { Args: { _code: string }; Returns: Json }
       approve_promo_request: {
         Args: { _id: string; _note?: string }
         Returns: string
       }
       can_use_gang_chat: { Args: { _user_id: string }; Returns: boolean }
+      claim_challenge: { Args: { _challenge_id: string }; Returns: Json }
+      claim_daily_login: { Args: never; Returns: Json }
+      claim_task: { Args: { _task_key: string }; Returns: Json }
       create_withdrawal_request: {
         Args: {
           _amount: number
@@ -1120,10 +1866,31 @@ export type Database = {
         }
         Returns: boolean
       }
+      house_manual_adjust: {
+        Args: { _amount: number; _note: string }
+        Returns: undefined
+      }
+      house_set_paused: { Args: { _paused: boolean }; Returns: undefined }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_mod_or_admin: { Args: { _user_id: string }; Returns: boolean }
+      place_virtual_ticket: { Args: { _payload: Json }; Returns: Json }
+      redeem_promo_code: { Args: { _code: string }; Returns: Json }
+      resolve_virtual_round: { Args: never; Returns: Json }
+      review_gang_emblem: {
+        Args: { _approve: boolean; _id: string; _note?: string }
+        Returns: undefined
+      }
       review_withdrawal_request: {
         Args: { _approve: boolean; _id: string; _note?: string }
+        Returns: undefined
+      }
+      server_now: { Args: never; Returns: string }
+      settle_pay_winning_bet: { Args: { _bet_id: string }; Returns: Json }
+      user_cashout_bet: { Args: { _bet_id: string }; Returns: Json }
+      verify_xp_consistency: { Args: never; Returns: Json }
+      virtual_tick: { Args: never; Returns: Json }
+      virtual_wallet_admin_adjust: {
+        Args: { _amount: number; _note: string }
         Returns: undefined
       }
       wipe_all_tokens: { Args: never; Returns: undefined }
