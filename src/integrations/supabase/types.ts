@@ -727,6 +727,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_locked: boolean
           is_open: boolean
           match_id: string
           name: string
@@ -734,6 +735,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_locked?: boolean
           is_open?: boolean
           match_id: string
           name: string
@@ -741,6 +743,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_locked?: boolean
           is_open?: boolean
           match_id?: string
           name?: string
@@ -1946,6 +1949,10 @@ export type Database = {
       }
       server_now: { Args: never; Returns: string }
       settle_pay_winning_bet: { Args: { _bet_id: string }; Returns: Json }
+      toggle_market_lock: {
+        Args: { _locked?: boolean; _match_id?: string }
+        Returns: undefined
+      }
       user_cashout_bet: { Args: { _bet_id: string }; Returns: Json }
       verify_xp_consistency: { Args: never; Returns: Json }
       virtual_tick: { Args: never; Returns: Json }
