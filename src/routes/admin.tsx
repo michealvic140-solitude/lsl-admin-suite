@@ -72,6 +72,14 @@ function AdminPage() {
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [isAdmin]);
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (typeof detail === "string") setActiveTab(detail);
+    };
+    window.addEventListener("admin:set-tab", handler);
+    return () => window.removeEventListener("admin:set-tab", handler);
+  }, []);
   if (loading) return <Layout><div className="container py-10">Loading…</div></Layout>;
   if (!isAdmin && !isMod) return null;
 
