@@ -2324,15 +2324,30 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
 
 /* ============================ ANALYTICS ============================ */
 function AnalyticsPanel() {
+  const nav = useNavigate();
   const [stats, setStats] = useState<any>(null);
   const [series, setSeries] = useState<any[]>([]);
+  const [counts, setCounts] = useState<any>({});
+  const [activity, setActivity] = useState<any[]>([]);
+  const [liveMatches, setLiveMatches] = useState<any[]>([]);
+  const [broadcasts, setBroadcasts] = useState<any[]>([]);
+  const [event, setEvent] = useState<any>(null);
+
   useEffect(() => {
     (async () => {
-      const [u, b, t, r] = await Promise.all([
+      const [u, b, t, r, m, tr, wr, pr, ap, ti, br, ev] = await Promise.all([
         supabase.from("profiles").select("created_at, token_balance, is_banned"),
         supabase.from("bets").select("status, stake, potential_payout, created_at"),
         supabase.from("token_transactions").select("amount, kind, created_at"),
         supabase.from("token_requests").select("status, amount"),
+        supabase.from("matches").select("id,name,status,created_at").in("status", ["live", "scheduled"]).limit(5),
+        supabase.from("token_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("withdrawal_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("promo_code_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("ban_appeals").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("support_tickets").select("id", { count: "exact", head: true }).neq("status", "closed"),
+        supabase.from("broadcasts").select("*").order("created_at", { ascending: false }).limit(3),
+        supabase.from("events").select("*").eq("is_active", true).order("starts_at", { ascending: true }).limit(1).maybeSingle(),
       ]);
       const users = u.data ?? [];
       const bets = b.data ?? [];
@@ -2353,7 +2368,20 @@ function AnalyticsPanel() {
         debits: txs.filter((x: any) => x.amount < 0).reduce((a, x: any) => a + Math.abs(x.amount), 0),
         credits: txs.filter((x: any) => x.amount > 0).reduce((a, x: any) => a + x.amount, 0),
       });
-      // Build last 14 day series
+      setCounts({
+        gangWars: m.data?.length ?? 0,
+        pendingTokens: tr.count ?? 0,
+        pendingWithdrawals: wr.count ?? 0,
+        pendingPromos: pr.count ?? 0,
+        pendingAppeals: ap.count ?? 0,
+        openTickets: ti.count ?? 0,
+        bookedTickets: bets.length,
+        pendingTotal: (tr.count ?? 0) + (wr.count ?? 0) + (pr.count ?? 0),
+      });
+      setLiveMatches(m.data ?? []);
+      setBroadcasts(br.data ?? []);
+      setEvent(ev.data ?? null);
+
       const days: Record<string, { day: string; bets: number; staked: number; users: number }> = {};
       const today = new Date(); today.setHours(0,0,0,0);
       for (let i = 13; i >= 0; i--) {
@@ -2370,70 +2398,270 @@ function AnalyticsPanel() {
         if (days[k]) days[k].users += 1;
       });
       setSeries(Object.values(days));
+
+      const { data: aud } = await supabase.from("audit_logs").select("action,target_type,created_at,metadata").order("created_at", { ascending: false }).limit(6);
+      setActivity(aud ?? []);
     })();
   }, []);
-  if (!stats) return <div>Loading…</div>;
-  const items = [
-    { label: "Total users", value: stats.totalUsers },
-    { label: "Banned users", value: stats.bannedUsers },
-    { label: "Tokens circulating", value: stats.circulating.toLocaleString() },
-    { label: "Total bets", value: stats.totalBets },
-    { label: "Won bets", value: stats.wonBets },
-    { label: "Lost bets", value: stats.lostBets },
-    { label: "Open bets", value: stats.openBets },
-    { label: "Total staked", value: stats.totalStaked.toLocaleString() },
-    { label: "Total paid out", value: stats.totalPaid.toLocaleString() },
-    { label: "Net (house)", value: stats.houseEdge.toLocaleString() },
-    { label: "Tokens approved", value: stats.approvedRequests.toLocaleString() },
-    { label: "Token credits", value: stats.credits.toLocaleString() },
-    { label: "Token debits", value: stats.debits.toLocaleString() },
+
+  if (!stats) return <div className="text-sm text-muted-foreground">Loading analytics…</div>;
+
+  const fmt = (n: number) => n.toLocaleString();
+  const short = (n: number) => {
+    const a = Math.abs(n);
+    if (a >= 1e9) return (n / 1e9).toFixed(2) + "B";
+    if (a >= 1e6) return (n / 1e6).toFixed(2) + "M";
+    if (a >= 1e3) return (n / 1e3).toFixed(1) + "K";
+    return String(n);
+  };
+
+  const row1 = [
+    { icon: Users, value: stats.totalUsers, title: "USERS", sub: "TOTAL USERS", tone: "gold" },
+    { icon: Trophy, value: counts.gangWars ?? 0, title: "GANG WARS", sub: "LIVE & UPCOMING", tone: "gold" },
+    { icon: AlertTriangle, value: counts.pendingTotal ?? 0, title: "PENDING REQUESTS", sub: "AWAITING ACTION", tone: "amber" },
+    { icon: Coins, value: short(stats.circulating), title: "TOTAL VOLUME", sub: "IN CIRCULATION", tone: "gold-lg" },
+    { icon: Calendar, value: counts.openTickets ?? 0, title: "OPEN REPORTS", sub: "REPORTED ITEMS", tone: "gold" },
   ];
+  const row2 = [
+    { icon: Ticket, value: counts.bookedTickets ?? 0, title: "TICKETS BOOKED", sub: "TOTAL BOOKED" },
+    { icon: Coins, value: counts.pendingTokens ?? 0, title: "TOKEN REQUESTS", sub: "REQUESTED TOKENS" },
+    { icon: Wallet, value: counts.pendingWithdrawals ?? 0, title: "WITHDRAWALS", sub: "PENDING PAYOUTS" },
+    { icon: Tag, value: counts.pendingPromos ?? 0, title: "PROMO REQUESTS", sub: "PENDING PROMOS" },
+    { icon: AlertTriangle, value: counts.pendingAppeals ?? 0, title: "BAN APPEALS", sub: "PENDING APPEALS" },
+  ];
+  const row4 = [
+    { icon: Users, value: stats.totalUsers, title: "TOTAL USERS" },
+    { icon: Shield, value: stats.bannedUsers, title: "BANNED USERS" },
+    { icon: Coins, value: short(stats.circulating), title: "TOKENS CIRCULATING" },
+    { icon: Ticket, value: stats.totalBets, title: "TOTAL BETS" },
+    { icon: Trophy, value: stats.wonBets, title: "WON BETS" },
+  ];
+  const row5 = [
+    { icon: X, value: stats.lostBets, title: "LOST BETS" },
+    { icon: Eye, value: stats.openBets, title: "OPEN BETS" },
+    { icon: Coins, value: short(stats.totalStaked), title: "TOTAL STAKED" },
+    { icon: Wallet, value: short(stats.totalPaid), title: "TOTAL PAID OUT" },
+    { icon: BarChart3, value: short(stats.houseEdge), title: "NET (HOUSE)" },
+  ];
+  const row6 = [
+    { icon: Check, value: short(stats.approvedRequests), title: "TOKENS APPROVED" },
+    { icon: Coins, value: short(stats.credits), title: "TOKEN CREDITS" },
+    { icon: Coins, value: short(stats.debits), title: "TOKEN DEBITS" },
+  ];
+
+  const ts = (ts: string) => {
+    const diff = (Date.now() - +new Date(ts)) / 1000;
+    if (diff < 60) return `${Math.floor(diff)}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+    return `${Math.floor(diff / 86400)} days ago`;
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-        {items.map((x) => (
-          <Card key={x.label} className="glass p-4">
-            <div className="text-2xl font-bold gradient-gold-text">{x.value}</div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{x.label}</div>
+    <div className="space-y-3">
+      {/* ROW 1 — 5 metric squares */}
+      <div className="grid grid-cols-5 gap-2 sm:gap-3">
+        {row1.map((x) => <MetricSquare key={x.title} {...x} />)}
+      </div>
+
+      {/* ROW 2 — 5 metric squares */}
+      <div className="grid grid-cols-5 gap-2 sm:gap-3">
+        {row2.map((x) => <MetricSquare key={x.title} {...x} />)}
+      </div>
+
+      {/* ROW 3 — 2 charts side-by-side */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        <Card className="glass p-2 sm:p-4 border-primary/20 bg-card/60">
+          <div className="text-[9px] sm:text-xs font-bold tracking-widest text-primary mb-1">VOLUME OVER TIME <span className="text-muted-foreground font-normal">(LAST 14 DAYS)</span></div>
+          <ResponsiveContainer width="100%" height={160}>
+            <AreaChart data={series} margin={{ top: 5, right: 4, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="gStake" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(45 96% 56%)" stopOpacity={0.5} />
+                  <stop offset="100%" stopColor="hsl(45 96% 56%)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(45 30% 20%)" />
+              <XAxis dataKey="day" stroke="hsl(45 50% 60%)" fontSize={8} />
+              <YAxis stroke="hsl(45 50% 60%)" fontSize={8} tickFormatter={short} />
+              <RTooltip contentStyle={{ background: "hsl(45 20% 8%)", border: "1px solid hsl(45 60% 40%)", borderRadius: 8, fontSize: 11 }} />
+              <Area type="monotone" dataKey="staked" stroke="hsl(45 96% 56%)" fill="url(#gStake)" strokeWidth={2} dot={{ r: 2, fill: "hsl(45 96% 56%)" }} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Card>
+        <Card className="glass p-2 sm:p-4 border-primary/20 bg-card/60">
+          <div className="text-[9px] sm:text-xs font-bold tracking-widest text-primary mb-1">NEW USERS PER DAY</div>
+          <ResponsiveContainer width="100%" height={160}>
+            <BarChart data={series} margin={{ top: 5, right: 4, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(45 30% 20%)" />
+              <XAxis dataKey="day" stroke="hsl(45 50% 60%)" fontSize={8} />
+              <YAxis stroke="hsl(45 50% 60%)" fontSize={8} />
+              <RTooltip contentStyle={{ background: "hsl(45 20% 8%)", border: "1px solid hsl(45 60% 40%)", borderRadius: 8, fontSize: 11 }} />
+              <Bar dataKey="users" fill="hsl(45 96% 56%)" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+      </div>
+
+      {/* ROW 4 — 5 metric squares */}
+      <div className="grid grid-cols-5 gap-2 sm:gap-3">
+        {row4.map((x) => <MetricSquare key={x.title} {...x} compact />)}
+      </div>
+
+      {/* ROW 5 — 5 metric squares */}
+      <div className="grid grid-cols-5 gap-2 sm:gap-3">
+        {row5.map((x) => <MetricSquare key={x.title} {...x} compact />)}
+      </div>
+
+      {/* ROW 6 — 3 wider squares + image cell */}
+      <div className="grid grid-cols-4 gap-2 sm:gap-3">
+        {row6.map((x) => <MetricSquare key={x.title} {...x} compact />)}
+        <Card className="overflow-hidden border-primary/20 bg-card/60 relative min-h-[80px]">
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,hsl(45_30%_15%),hsl(0_50%_15%))] opacity-80" />
+          <div className="absolute inset-0 grid place-items-center text-[10px] uppercase tracking-widest text-primary/80 font-bold">League</div>
+        </Card>
+      </div>
+
+      {/* ROW 7 — Recent Activity | Live Gang Wars | Highlights Hub */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <PanelBlock title="RECENT ACTIVITY" onView={() => setActiveTabFromAnalytics(nav, "activity")}>
+          {activity.length === 0 && <div className="text-[10px] text-muted-foreground">No activity yet</div>}
+          {activity.map((a, i) => (
+            <div key={i} className="flex items-start gap-1.5 text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0">
+              <Sparkles className="h-3 w-3 text-primary shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <div className="text-foreground truncate">{a.action?.replace(/_/g, " ")}</div>
+                <div className="text-muted-foreground text-[8px] sm:text-[10px]">{ts(a.created_at)}</div>
+              </div>
+            </div>
+          ))}
+        </PanelBlock>
+        <PanelBlock title="LIVE GANG WARS" onView={() => nav({ to: "/matches" })}>
+          {liveMatches.length === 0 && <div className="text-[10px] text-muted-foreground">No live wars</div>}
+          {liveMatches.map((m) => (
+            <div key={m.id} className="flex items-center justify-between text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0">
+              <span className="truncate text-foreground">{m.name}</span>
+              <Badge variant="outline" className="text-[8px] border-primary/40 text-primary px-1 py-0">{m.status}</Badge>
+            </div>
+          ))}
+        </PanelBlock>
+        <PanelBlock title="HIGHLIGHTS HUB" onView={() => nav({ to: "/" })}>
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-1.5 text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0">
+              <Play className="h-3 w-3 text-primary shrink-0" />
+              <div className="min-w-0 flex-1 truncate">Highlight #{i}</div>
+            </div>
+          ))}
+        </PanelBlock>
+      </div>
+
+      {/* ROW 8 — Event Countdown | Broadcast Center | Quick Actions */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <PanelBlock title="EVENT COUNTDOWN">
+          <div className="text-[9px] sm:text-xs font-bold text-primary">{event?.title ?? "No active event"}</div>
+          <div className="text-[8px] sm:text-[10px] text-muted-foreground">{event?.starts_at ? new Date(event.starts_at).toLocaleString() : "—"}</div>
+        </PanelBlock>
+        <PanelBlock title="BROADCAST CENTER" onView={() => setActiveTabFromAnalytics(nav, "broadcast")}>
+          {broadcasts.length === 0 && <div className="text-[10px] text-muted-foreground">No broadcasts</div>}
+          {broadcasts.map((b) => (
+            <div key={b.id} className="text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0">
+              <div className="truncate text-foreground">{b.title || b.body?.slice(0, 30)}</div>
+              <div className="text-[8px] sm:text-[10px] text-muted-foreground">{ts(b.created_at)}</div>
+            </div>
+          ))}
+        </PanelBlock>
+        <PanelBlock title="QUICK ACTIONS">
+          <div className="grid grid-cols-3 gap-1">
+            {[
+              { i: Users, l: "Add User", t: "users" },
+              { i: Trophy, l: "Create War", t: "matches" },
+              { i: Megaphone, l: "Broadcast", t: "broadcast" },
+              { i: Tag, l: "Promo", t: "promos" },
+              { i: Coins, l: "Add Funds", t: "tokens" },
+              { i: BarChart3, l: "Reports", t: "reports" },
+            ].map((q) => (
+              <button key={q.l} onClick={() => setActiveTabFromAnalytics(nav, q.t)} className="flex flex-col items-center gap-0.5 p-1 rounded border border-primary/20 hover:border-primary/50 hover:bg-primary/10 transition">
+                <q.i className="h-3 w-3 text-primary" />
+                <span className="text-[7px] sm:text-[9px] text-foreground">{q.l}</span>
+              </button>
+            ))}
+          </div>
+        </PanelBlock>
+      </div>
+
+      {/* ROW 9 — 5 module tiles */}
+      <div className="grid grid-cols-5 gap-2 sm:gap-3">
+        {[
+          { l: "GANG WARS", s: "Manage gang wars and territories", t: "matches" },
+          { l: "VIP PROGRAM", s: "Manage VIP tiers and rewards", t: "vip" },
+          { l: "CHALLENGES", s: "Create and manage gang challenges", t: "challenges" },
+          { l: "REFERRALS", s: "Manage referrals and commissions", t: "referrals" },
+          { l: "HOUSE WALLET", s: "Manage platform funds", t: "housewallet" },
+        ].map((m) => (
+          <Card key={m.l} className="border-primary/20 bg-card/60 p-2 sm:p-3 flex flex-col">
+            <div className="aspect-square w-full mb-1 rounded bg-[linear-gradient(135deg,hsl(45_30%_15%),hsl(0_40%_12%))] grid place-items-center">
+              <Shield className="h-4 w-4 sm:h-6 sm:w-6 text-primary/60" />
+            </div>
+            <div className="text-[8px] sm:text-[10px] font-bold text-primary leading-tight">{m.l}</div>
+            <div className="text-[6px] sm:text-[8px] text-muted-foreground leading-tight mt-0.5 line-clamp-2">{m.s}</div>
+            <Button size="sm" variant="outline" className="mt-1 h-5 sm:h-6 text-[7px] sm:text-[9px] border-primary/40 text-primary px-1" onClick={() => setActiveTabFromAnalytics(nav, m.t)}>Manage</Button>
           </Card>
         ))}
       </div>
-      <Card className="glass p-4">
-        <div className="text-sm font-bold mb-3">Last 14 days · Bets & Stake</div>
-        <ResponsiveContainer width="100%" height={240}>
-          <AreaChart data={series}>
-            <defs>
-              <linearGradient id="gStake" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.6} />
-                <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="gBets" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.6} />
-                <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={10} />
-            <YAxis stroke="var(--muted-foreground)" fontSize={10} />
-            <RTooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }} />
-            <Area type="monotone" dataKey="staked" stroke="var(--primary)" fill="url(#gStake)" name="Staked" />
-            <Area type="monotone" dataKey="bets" stroke="var(--accent)" fill="url(#gBets)" name="Bets" />
-          </AreaChart>
-        </ResponsiveContainer>
-      </Card>
-      <Card className="glass p-4">
-        <div className="text-sm font-bold mb-3">New users per day</div>
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={series}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={10} />
-            <YAxis stroke="var(--muted-foreground)" fontSize={10} />
-            <RTooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }} />
-            <Bar dataKey="users" fill="var(--primary)" radius={[6,6,0,0]} />
-          </BarChart>
-        </ResponsiveContainer>
+
+      {/* ROW 10 — System Status */}
+      <Card className="border-primary/20 bg-card/60 p-3">
+        <div className="text-[10px] sm:text-xs font-bold tracking-widest text-primary mb-2">SYSTEM STATUS <span className="text-muted-foreground font-normal">(COMING SOON)</span></div>
+        <div className="grid grid-cols-5 gap-1 sm:gap-2">
+          {["Platform", "Database", "Payments", "Broadcast", "AI Engine"].map((s) => (
+            <div key={s} className="flex items-center justify-between gap-1 text-[8px] sm:text-[10px] px-1.5 py-1 rounded bg-background/40 border border-primary/10">
+              <span className="text-foreground truncate">{s}</span>
+              <span className="text-emerald-400 font-bold">●</span>
+            </div>
+          ))}
+        </div>
       </Card>
     </div>
+  );
+}
+
+function setActiveTabFromAnalytics(_nav: any, _tab: string) {
+  // Dispatch a custom event the parent listens to, or fallback: store and reload
+  const ev = new CustomEvent("admin:set-tab", { detail: _tab });
+  window.dispatchEvent(ev);
+}
+
+function MetricSquare({ icon: Icon, value, title, sub, tone, compact }: { icon: any; value: any; title: string; sub?: string; tone?: string; compact?: boolean }) {
+  const valueClass = tone === "gold-lg"
+    ? "text-[10px] sm:text-base font-black text-primary leading-tight"
+    : tone === "amber"
+    ? "text-base sm:text-xl font-black text-amber-400 leading-none"
+    : compact
+    ? "text-xs sm:text-lg font-black text-primary leading-none"
+    : "text-base sm:text-2xl font-black text-primary leading-none";
+  return (
+    <Card className="border-primary/20 bg-card/60 p-1.5 sm:p-3 flex flex-col justify-between min-h-[68px] sm:min-h-[100px] hover:border-primary/50 transition cursor-pointer">
+      <Icon className="h-2.5 w-2.5 sm:h-4 sm:w-4 text-primary/70 mb-0.5" />
+      <div className={valueClass}>{value}</div>
+      <div className="mt-0.5">
+        <div className="text-[6px] sm:text-[9px] uppercase tracking-wider text-muted-foreground leading-tight font-semibold">{title}</div>
+        {sub && <div className="text-[5px] sm:text-[8px] uppercase tracking-wider text-muted-foreground/70 leading-tight">{sub}</div>}
+      </div>
+    </Card>
+  );
+}
+
+function PanelBlock({ title, onView, children }: { title: string; onView?: () => void; children: React.ReactNode }) {
+  return (
+    <Card className="border-primary/20 bg-card/60 p-2 sm:p-3 flex flex-col min-h-[140px]">
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="text-[8px] sm:text-[11px] font-bold tracking-widest text-primary">{title}</div>
+        {onView && (
+          <button onClick={onView} className="text-[7px] sm:text-[9px] text-primary/70 hover:text-primary">View all</button>
+        )}
+      </div>
+      <div className="space-y-0.5 flex-1 overflow-hidden">{children}</div>
+    </Card>
   );
 }
 

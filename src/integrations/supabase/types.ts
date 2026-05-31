@@ -102,6 +102,7 @@ export type Database = {
           contact_phone: string | null
           contact_whatsapp: string | null
           daily_login_reward: number | null
+          emblem_auto_approve: boolean
           force_reload_at: string | null
           hero_tagline: string | null
           id: number
@@ -116,10 +117,18 @@ export type Database = {
           popup_ad_text: string | null
           terms_content: string | null
           updated_at: string
+          vapid_private_key: string | null
+          vapid_public_key: string | null
+          vapid_subject: string | null
+          virtual_concurrent_rounds: number
           virtual_cycle_seconds: number | null
           virtual_enabled: boolean | null
+          virtual_min_stake: number
+          virtual_round_duration_seconds: number
           why_trust_us: string | null
           xp_per_bet: number | null
+          xp_per_login: number
+          xp_per_referral: number
           xp_per_win: number | null
         }
         Insert: {
@@ -128,6 +137,7 @@ export type Database = {
           contact_phone?: string | null
           contact_whatsapp?: string | null
           daily_login_reward?: number | null
+          emblem_auto_approve?: boolean
           force_reload_at?: string | null
           hero_tagline?: string | null
           id?: number
@@ -142,10 +152,18 @@ export type Database = {
           popup_ad_text?: string | null
           terms_content?: string | null
           updated_at?: string
+          vapid_private_key?: string | null
+          vapid_public_key?: string | null
+          vapid_subject?: string | null
+          virtual_concurrent_rounds?: number
           virtual_cycle_seconds?: number | null
           virtual_enabled?: boolean | null
+          virtual_min_stake?: number
+          virtual_round_duration_seconds?: number
           why_trust_us?: string | null
           xp_per_bet?: number | null
+          xp_per_login?: number
+          xp_per_referral?: number
           xp_per_win?: number | null
         }
         Update: {
@@ -154,6 +172,7 @@ export type Database = {
           contact_phone?: string | null
           contact_whatsapp?: string | null
           daily_login_reward?: number | null
+          emblem_auto_approve?: boolean
           force_reload_at?: string | null
           hero_tagline?: string | null
           id?: number
@@ -168,10 +187,18 @@ export type Database = {
           popup_ad_text?: string | null
           terms_content?: string | null
           updated_at?: string
+          vapid_private_key?: string | null
+          vapid_public_key?: string | null
+          vapid_subject?: string | null
+          virtual_concurrent_rounds?: number
           virtual_cycle_seconds?: number | null
           virtual_enabled?: boolean | null
+          virtual_min_stake?: number
+          virtual_round_duration_seconds?: number
           why_trust_us?: string | null
           xp_per_bet?: number | null
+          xp_per_login?: number
+          xp_per_referral?: number
           xp_per_win?: number | null
         }
         Relationships: []
@@ -655,6 +682,7 @@ export type Database = {
         Row: {
           draws: number
           id: string
+          is_hidden: boolean
           kind: string
           losses: number
           manual_rank: number | null
@@ -668,6 +696,7 @@ export type Database = {
         Insert: {
           draws?: number
           id?: string
+          is_hidden?: boolean
           kind: string
           losses?: number
           manual_rank?: number | null
@@ -681,6 +710,7 @@ export type Database = {
         Update: {
           draws?: number
           id?: string
+          is_hidden?: boolean
           kind?: string
           losses?: number
           manual_rank?: number | null
@@ -697,6 +727,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_locked: boolean
           is_open: boolean
           match_id: string
           name: string
@@ -704,6 +735,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_locked?: boolean
           is_open?: boolean
           match_id: string
           name: string
@@ -711,6 +743,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_locked?: boolean
           is_open?: boolean
           match_id?: string
           name?: string
@@ -735,7 +768,9 @@ export type Database = {
           home_score: number
           home_team_id: string
           id: string
+          is_archived: boolean
           is_featured: boolean
+          is_virtual: boolean
           location: string | null
           name: string
           start_time: string
@@ -752,7 +787,9 @@ export type Database = {
           home_score?: number
           home_team_id: string
           id?: string
+          is_archived?: boolean
           is_featured?: boolean
+          is_virtual?: boolean
           location?: string | null
           name: string
           start_time: string
@@ -769,7 +806,9 @@ export type Database = {
           home_score?: number
           home_team_id?: string
           id?: string
+          is_archived?: boolean
           is_featured?: boolean
+          is_virtual?: boolean
           location?: string | null
           name?: string
           start_time?: string
@@ -1710,6 +1749,30 @@ export type Database = {
           },
         ]
       }
+      watchlists: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       withdrawal_requests: {
         Row: {
           admin_note: string | null
@@ -1886,6 +1949,10 @@ export type Database = {
       }
       server_now: { Args: never; Returns: string }
       settle_pay_winning_bet: { Args: { _bet_id: string }; Returns: Json }
+      toggle_market_lock: {
+        Args: { _locked?: boolean; _match_id?: string }
+        Returns: undefined
+      }
       user_cashout_bet: { Args: { _bet_id: string }; Returns: Json }
       verify_xp_consistency: { Args: never; Returns: Json }
       virtual_tick: { Args: never; Returns: Json }
