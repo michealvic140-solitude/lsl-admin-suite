@@ -2382,6 +2382,8 @@ function AnalyticsPanel() {
 
       const { data: aud } = await supabase.from("audit_logs").select("action,target_type,created_at,metadata").order("created_at", { ascending: false }).limit(6);
       setActivity(aud ?? []);
+      const { data: hl } = await supabase.from("highlights").select("id,title,media_url,media_type,created_at").eq("is_active", true).order("created_at", { ascending: false }).limit(4);
+      setHighlights(hl ?? []);
     })();
   }, []);
 
