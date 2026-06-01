@@ -2530,10 +2530,11 @@ function AnalyticsPanel() {
           ))}
         </PanelBlock>
         <PanelBlock title="HIGHLIGHTS HUB" onView={() => setActiveTabFromAnalytics(nav, "content")}>
-          {[1, 2, 3].map((i) => (
-            <button key={i} onClick={() => setActiveTabFromAnalytics(nav, "content")} className="w-full flex items-center gap-1.5 text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0 hover:bg-primary/5 rounded px-1 transition">
-              <Play className="h-3 w-3 text-primary shrink-0" />
-              <div className="min-w-0 flex-1 truncate text-left">Highlight #{i}</div>
+          {highlights.length === 0 && <div className="text-[10px] text-muted-foreground">No highlights yet</div>}
+          {highlights.map((h) => (
+            <button key={h.id} onClick={() => setActiveTabFromAnalytics(nav, "content")} className="w-full flex items-center gap-1.5 text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0 hover:bg-primary/5 rounded px-1 transition">
+              {h.media_type === "video" ? <Play className="h-3 w-3 text-primary shrink-0" /> : <ImageIcon className="h-3 w-3 text-primary shrink-0" />}
+              <div className="min-w-0 flex-1 truncate text-left">{h.title}</div>
             </button>
           ))}
         </PanelBlock>
@@ -2542,35 +2543,75 @@ function AnalyticsPanel() {
       {/* ROW 8 — Event Countdown | Broadcast Center | Quick Actions */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <PanelBlock title="EVENT COUNTDOWN" onView={() => setActiveTabFromAnalytics(nav, "events")}>
-          <button onClick={() => setActiveTabFromAnalytics(nav, "events")} className="w-full text-left hover:bg-primary/5 rounded p-1 transition">
-            <div className="text-[9px] sm:text-xs font-bold text-primary">{event?.title ?? "No active event"}</div>
-            <div className="text-[8px] sm:text-[10px] text-muted-foreground">{event?.starts_at ? new Date(event.starts_at).toLocaleString() : "—"}</div>
-          </button>
+          {event ? (
+            <button onClick={() => setActiveTabFromAnalytics(nav, "events")} className="w-full text-left hover:bg-primary/5 rounded p-1 transition space-y-1">
+              <div className="text-[9px] sm:text-xs font-bold text-primary truncate">{event.title}</div>
+              <div className="text-[10px] sm:text-sm font-mono text-amber-300"><Countdown target={event.ends_at ?? event.starts_at} /></div>
+              <div className="text-[7px] sm:text-[9px] text-muted-foreground">{new Date(event.starts_at ?? event.ends_at).toLocaleString()}</div>
+            </button>
+          ) : (
+            <div className="text-[10px] text-muted-foreground">No active event</div>
+          )}
         </PanelBlock>
         <PanelBlock title="BROADCAST CENTER" onView={() => setActiveTabFromAnalytics(nav, "broadcast")}>
           {broadcasts.length === 0 && <div className="text-[10px] text-muted-foreground">No broadcasts</div>}
           {broadcasts.map((b) => (
             <button key={b.id} onClick={() => setActiveTabFromAnalytics(nav, "broadcast")} className="w-full text-left text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0 hover:bg-primary/5 rounded px-1 transition">
-              <div className="truncate text-foreground">{b.title || b.body?.slice(0, 30)}</div>
-              <div className="text-[8px] sm:text-[10px] text-muted-foreground">{ts(b.created_at)}</div>
+              <div className="flex items-center gap-1"><Megaphone className="h-2.5 w-2.5 text-primary shrink-0" /><div className="truncate text-foreground font-semibold">{b.title || "Broadcast"}</div></div>
+              {b.body && <div className="text-[8px] sm:text-[10px] text-muted-foreground truncate pl-3.5">{b.body}</div>}
+              <div className="text-[7px] sm:text-[9px] text-muted-foreground pl-3.5">{ts(b.created_at)}</div>
             </button>
           ))}
         </PanelBlock>
         <PanelBlock title="QUICK ACTIONS">
-          <div className="grid grid-cols-3 gap-1">
-            {[
-              { i: Users, l: "Add User", t: "users" },
-              { i: Trophy, l: "Create War", t: "matches" },
-              { i: Megaphone, l: "Broadcast", t: "broadcast" },
-              { i: Tag, l: "Promo", t: "promos" },
-              { i: Coins, l: "Add Funds", t: "tokens" },
-              { i: BarChart3, l: "Reports", t: "reports" },
-            ].map((q) => (
-              <button key={q.l} onClick={() => setActiveTabFromAnalytics(nav, q.t)} className="flex flex-col items-center gap-0.5 p-1 rounded border border-primary/20 hover:border-primary/50 hover:bg-primary/10 transition">
-                <q.i className="h-3 w-3 text-primary" />
-                <span className="text-[7px] sm:text-[9px] text-foreground">{q.l}</span>
-              </button>
-            ))}
+          <div className="max-h-[260px] sm:max-h-[320px] overflow-y-auto pr-1 -mr-1">
+            <div className="grid grid-cols-3 gap-1">
+              {[
+                { i: BarChart3, l: "Analytics", t: "analytics" },
+                { i: Users, l: "Users", t: "users" },
+                { i: Shield, l: "Banned", t: "bannedusers" },
+                { i: Sparkles, l: "Admin AI", t: "adminai" },
+                { i: AlertTriangle, l: "Appeals", t: "appeals" },
+                { i: History, l: "Audit", t: "audit" },
+                { i: ClipboardList, l: "Bet Tracker", t: "bettracker" },
+                { i: Send, l: "Broadcast", t: "broadcast" },
+                { i: Sparkles, l: "Challenges", t: "challenges" },
+                { i: MessageSquare, l: "Chat", t: "chat" },
+                { i: Megaphone, l: "Content", t: "content" },
+                { i: Trophy, l: "Emblems", t: "emblems" },
+                { i: Calendar, l: "Events", t: "events" },
+                { i: Wallet, l: "House Wallet", t: "housewallet" },
+                { i: ListOrdered, l: "Leaderboard", t: "leaderboard" },
+                { i: Trophy, l: "Matches", t: "matches" },
+                { i: Send, l: "Notify", t: "notify" },
+                { i: BarChart3, l: "P&L", t: "pnl" },
+                { i: Tag, l: "Promo Codes", t: "promos" },
+                { i: Tag, l: "Promo Reqs", t: "promoreqs" },
+                { i: Users, l: "Referrals", t: "referrals" },
+                { i: BarChart3, l: "Reports", t: "reports" },
+                { i: AlertTriangle, l: "Risk", t: "risk" },
+                { i: Trophy, l: "Seasons", t: "seasons" },
+                { i: SettingsIcon, l: "Settings", t: "settings" },
+                { i: Sparkles, l: "Spotlights", t: "spotlights" },
+                { i: Sparkles, l: "Streak/Push", t: "streakpush" },
+                { i: ClipboardList, l: "Tasks", t: "tasks" },
+                { i: Ticket, l: "Tickets", t: "tickets" },
+                { i: Coins, l: "Tokens", t: "tokens" },
+                { i: Coins, l: "Token Rules", t: "tokenrules" },
+                { i: Coins, l: "Token Move", t: "tokenmovement" },
+                { i: Users, l: "Activity", t: "activity" },
+                { i: Dice5, l: "Virtual", t: "virtual" },
+                { i: Trophy, l: "VIP", t: "vip" },
+                { i: Wallet, l: "Withdrawals", t: "withdrawals" },
+                { i: Trophy, l: "Won Bets", t: "wonbets" },
+                { i: X, l: "Lost Bets", t: "lostbets" },
+              ].map((q) => (
+                <button key={q.l} onClick={() => setActiveTabFromAnalytics(nav, q.t)} className="flex flex-col items-center gap-0.5 p-1 rounded border border-primary/20 hover:border-primary/50 hover:bg-primary/10 active:scale-95 transition">
+                  <q.i className="h-3 w-3 text-primary" />
+                  <span className="text-[7px] sm:text-[9px] text-foreground text-center leading-tight">{q.l}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </PanelBlock>
       </div>
@@ -2578,16 +2619,16 @@ function AnalyticsPanel() {
       {/* ROW 9 — 5 module tiles */}
       <div className="grid grid-cols-5 gap-2 sm:gap-3">
         {[
-          { l: "GANG WARS", s: "Manage gang wars and territories", t: "matches" },
-          { l: "VIP PROGRAM", s: "Manage VIP tiers and rewards", t: "vip" },
-          { l: "CHALLENGES", s: "Create and manage gang challenges", t: "challenges" },
-          { l: "REFERRALS", s: "Manage referrals and commissions", t: "referrals" },
-          { l: "HOUSE WALLET", s: "Manage platform funds", t: "housewallet" },
+          { l: "VIRTUAL", s: "Manage virtual matches and rounds", t: "virtual", img: tileVirtual },
+          { l: "VIP PROGRAM", s: "Manage VIP tiers and rewards", t: "vip", img: tileVip },
+          { l: "CHALLENGES", s: "Create and manage gang challenges", t: "challenges", img: tileChallenges },
+          { l: "REFERRALS", s: "Manage referrals and commissions", t: "referrals", img: tileReferrals },
+          { l: "HOUSE WALLET", s: "Manage platform funds", t: "housewallet", img: tileHousewallet },
         ].map((m) => (
           <Card key={m.l} className="border-primary/20 bg-card/60 p-2 sm:p-3 flex flex-col">
-            <div className="aspect-square w-full mb-1 rounded bg-[linear-gradient(135deg,hsl(45_30%_15%),hsl(0_40%_12%))] grid place-items-center">
-              <Shield className="h-4 w-4 sm:h-6 sm:w-6 text-primary/60" />
-            </div>
+            <button type="button" onClick={() => setActiveTabFromAnalytics(nav, m.t)} className="aspect-square w-full mb-1 rounded overflow-hidden border border-primary/20 hover:border-primary/60 transition active:scale-95">
+              <img src={m.img} alt={m.l} loading="lazy" width={512} height={512} className="w-full h-full object-cover" />
+            </button>
             <div className="text-[8px] sm:text-[10px] font-bold text-primary leading-tight">{m.l}</div>
             <div className="text-[6px] sm:text-[8px] text-muted-foreground leading-tight mt-0.5 line-clamp-2">{m.s}</div>
             <Button size="sm" variant="outline" className="mt-1 h-5 sm:h-6 text-[7px] sm:text-[9px] border-primary/40 text-primary px-1" onClick={() => setActiveTabFromAnalytics(nav, m.t)}>Manage</Button>
