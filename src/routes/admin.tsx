@@ -19,6 +19,12 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import lslLogo from "@/assets/lsl-logo.png";
+import tileVirtual from "@/assets/tile-virtual.jpg";
+import tileVip from "@/assets/tile-vip.jpg";
+import tileChallenges from "@/assets/tile-challenges.jpg";
+import tileReferrals from "@/assets/tile-referrals.jpg";
+import tileHousewallet from "@/assets/tile-housewallet.jpg";
+import { Countdown } from "@/components/Countdown";
 import { useAuth, ROLE_LABELS, type AppRole } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { fetchTeams } from "@/lib/queries";
