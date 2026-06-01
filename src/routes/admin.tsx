@@ -3825,7 +3825,7 @@ function BetsByStatusPanel({ status }: { status: "won" | "lost" }) {
       setRows(list);
       const ids = Array.from(new Set(list.map((b: any) => b.user_id).filter(Boolean)));
       if (ids.length) {
-        const { data: p } = await supabase.from("profiles").select("id,full_name,email,gang_name").in("id", ids);
+        const { data: p } = await supabase.from("profiles").select("id,full_name,email,gang_name").in("id", ids as string[]);
         const map: Record<string, any> = {}; (p ?? []).forEach((x: any) => { map[x.id] = x; }); setProfiles(map);
       }
     })();
