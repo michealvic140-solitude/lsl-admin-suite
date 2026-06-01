@@ -2312,6 +2312,7 @@ function AnalyticsPanel() {
   const [liveMatches, setLiveMatches] = useState<any[]>([]);
   const [broadcasts, setBroadcasts] = useState<any[]>([]);
   const [event, setEvent] = useState<any>(null);
+  const [highlights, setHighlights] = useState<any[]>([]);
 
   useEffect(() => {
     (async () => {
