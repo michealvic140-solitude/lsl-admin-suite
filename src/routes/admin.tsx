@@ -3766,3 +3766,163 @@ function SeasonsAdminPanel() {
     </div>
   );
 }
+
+/* ============================ BANNED USERS ============================ */
+function BannedUsersPanel() {
+  const [users, setUsers] = useState<any[]>([]);
+  const [q, setQ] = useState("");
+  async function load() {
+    const { data } = await supabase.from("profiles").select("id,full_name,email,gang_name,is_banned,ban_reason,updated_at").eq("is_banned", true).order("updated_at", { ascending: false });
+    setUsers(data ?? []);
+  }
+  useEffect(() => { load(); }, []);
+  async function unban(id: string) {
+    const { error } = await supabase.from("profiles").update({ is_banned: false, ban_reason: null }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("User unbanned");
+    logAudit("user_unban", "user", id);
+    load();
+  }
+  const filtered = users.filter((u) => !q || (u.full_name ?? "").toLowerCase().includes(q.toLowerCase()) || (u.email ?? "").toLowerCase().includes(q.toLowerCase()));
+  return (
+    <div className="space-y-3">
+      <Card className="glass-strong p-4 flex items-center gap-3 backdrop-blur-2xl border-destructive/30">
+        <Shield className="h-5 w-5 text-destructive" />
+        <div className="flex-1">
+          <div className="font-bold">Banned Users</div>
+          <div className="text-xs text-muted-foreground">{filtered.length} banned · click Unban to restore access.</div>
+        </div>
+        <Input placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
+      </Card>
+      {filtered.length === 0 && <p className="text-muted-foreground text-sm">No banned users.</p>}
+      {filtered.map((u) => (
+        <Card key={u.id} className="glass-strong p-4 flex items-center justify-between gap-3 flex-wrap backdrop-blur-2xl border-destructive/20">
+          <div className="min-w-0 flex-1">
+            <div className="font-bold">{u.full_name || "—"} <span className="text-xs text-muted-foreground font-normal">{u.email}</span></div>
+            <div className="text-xs text-muted-foreground">{u.gang_name ?? "Independent"} · banned {new Date(u.updated_at).toLocaleDateString()}</div>
+            {u.ban_reason && <div className="text-xs mt-1 text-destructive/80">Reason: {u.ban_reason}</div>}
+          </div>
+          <Button size="sm" variant="outline" className="border-emerald-500/40 text-emerald-300" onClick={() => unban(u.id)}>Unban</Button>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+/* ============================ BETS BY STATUS (won / lost) ============================ */
+function BetsByStatusPanel({ status }: { status: "won" | "lost" }) {
+  const [rows, setRows] = useState<any[]>([]);
+  const [profiles, setProfiles] = useState<Record<string, any>>({});
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase as any).from("bets")
+        .select("id,user_id,tracking_id,stake,potential_payout,settled_at,created_at,bet_selections(selection_label,matches:match_id(name))")
+        .eq("status", status)
+        .order("settled_at", { ascending: false, nullsFirst: false })
+        .limit(200);
+      const list = data ?? [];
+      setRows(list);
+      const ids = Array.from(new Set(list.map((b: any) => b.user_id).filter(Boolean)));
+      if (ids.length) {
+        const { data: p } = await supabase.from("profiles").select("id,full_name,email,gang_name").in("id", ids);
+        const map: Record<string, any> = {}; (p ?? []).forEach((x: any) => { map[x.id] = x; }); setProfiles(map);
+      }
+    })();
+  }, [status]);
+  const tone = status === "won" ? "emerald" : "destructive";
+  const label = status === "won" ? "Won Bets" : "Lost Bets";
+  return (
+    <div className="space-y-3">
+      <Card className={`glass-strong p-4 flex items-center gap-3 backdrop-blur-2xl border-${tone}-500/30`}>
+        {status === "won" ? <Trophy className="h-5 w-5 text-emerald-400" /> : <X className="h-5 w-5 text-destructive" />}
+        <div>
+          <div className="font-bold">{label}</div>
+          <div className="text-xs text-muted-foreground">{rows.length} ticket(s)</div>
+        </div>
+      </Card>
+      {rows.length === 0 && <p className="text-muted-foreground text-sm">No {status} bets yet.</p>}
+      <div className="grid gap-2">
+        {rows.map((b) => {
+          const u = profiles[b.user_id];
+          const matches = (b.bet_selections ?? []).map((s: any) => s.matches?.name || s.selection_label).filter(Boolean).join(" · ");
+          return (
+            <Card key={b.id} className="backdrop-blur-2xl bg-card/85 border-primary/25 p-4 shadow-luxury">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold">{u?.full_name ?? "—"}</span>
+                    <span className="text-xs text-muted-foreground">{u?.email}</span>
+                    <span className="font-mono text-[10px] text-primary">{b.tracking_id}</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5 truncate">{matches || "—"}</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">{new Date(b.settled_at ?? b.created_at).toLocaleString()}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{status === "won" ? "Amount Won" : "Stake Lost"}</div>
+                  <div className={`text-lg font-black ${status === "won" ? "text-emerald-300" : "text-destructive"}`}>
+                    {(status === "won" ? b.potential_payout : b.stake)?.toLocaleString?.() ?? 0}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ============================ TOKEN MOVEMENT (credits + debits) ============================ */
+function TokenMovementPanel() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [filter, setFilter] = useState<"all" | "credit" | "debit">("all");
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("token_transactions").select("id,user_id,amount,kind,description,balance_after,created_at").order("created_at", { ascending: false }).limit(300);
+      setRows(data ?? []);
+    })();
+  }, []);
+  const filtered = rows.filter((r) => filter === "all" || (filter === "credit" ? r.amount > 0 : r.amount < 0));
+  const credits = rows.filter((r) => r.amount > 0).reduce((a, r) => a + r.amount, 0);
+  const debits = rows.filter((r) => r.amount < 0).reduce((a, r) => a + Math.abs(r.amount), 0);
+  return (
+    <div className="space-y-3">
+      <Card className="glass-strong p-4 backdrop-blur-2xl border-primary/30">
+        <div className="flex items-center gap-3 flex-wrap">
+          <Coins className="h-5 w-5 text-primary" />
+          <div>
+            <div className="font-bold">Token Movement</div>
+            <div className="text-xs text-muted-foreground">Credits and debits across the platform</div>
+          </div>
+          <div className="ml-auto flex items-center gap-3 text-xs">
+            <span className="text-emerald-300 font-bold">+ {credits.toLocaleString()}</span>
+            <span className="text-destructive font-bold">− {debits.toLocaleString()}</span>
+          </div>
+        </div>
+        <div className="flex gap-1 mt-3">
+          {(["all", "credit", "debit"] as const).map((f) => (
+            <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} className="text-[10px] capitalize" onClick={() => setFilter(f)}>{f}</Button>
+          ))}
+        </div>
+      </Card>
+      {filtered.length === 0 && <p className="text-muted-foreground text-sm">No token movements.</p>}
+      <div className="grid gap-2">
+        {filtered.map((r) => (
+          <Card key={r.id} className="backdrop-blur-2xl bg-card/85 border-primary/20 p-3 flex items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-bold uppercase tracking-wider text-primary">{r.kind}</div>
+              <div className="text-xs text-muted-foreground truncate">{r.description ?? "—"}</div>
+              <div className="text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleString()}</div>
+            </div>
+            <div className="text-right">
+              <div className={`text-base font-black ${r.amount > 0 ? "text-emerald-300" : "text-destructive"}`}>
+                {r.amount > 0 ? "+" : "−"}{Math.abs(r.amount).toLocaleString()}
+              </div>
+              <div className="text-[10px] text-muted-foreground">bal {Number(r.balance_after ?? 0).toLocaleString()}</div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
