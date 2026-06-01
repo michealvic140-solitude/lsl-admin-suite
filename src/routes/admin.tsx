@@ -2403,7 +2403,7 @@ function AnalyticsPanel() {
     { icon: Users, value: stats.totalUsers, title: "USERS", sub: "TOTAL USERS", tone: "gold", onClick: () => goTab("users") },
     { icon: Trophy, value: counts.gangWars ?? 0, title: "GANG WARS", sub: "LIVE & UPCOMING", tone: "gold", onClick: () => goTab("matches") },
     { icon: AlertTriangle, value: counts.pendingTotal ?? 0, title: "PENDING REQUESTS", sub: "AWAITING ACTION", tone: "amber", onClick: () => goTab("tokens") },
-    { icon: Coins, value: short(stats.circulating), title: "TOTAL VOLUME", sub: "IN CIRCULATION", tone: "gold-lg", onClick: () => goTab("pnl") },
+    { icon: Coins, value: short(stats.circulating), title: "TOTAL VOLUME", sub: "IN CIRCULATION", tone: "gold-lg" },
     { icon: Calendar, value: counts.openTickets ?? 0, title: "OPEN REPORTS", sub: "REPORTED ITEMS", tone: "gold", onClick: () => goTab("tickets") },
   ];
   const row2 = [
@@ -2415,13 +2415,13 @@ function AnalyticsPanel() {
   ];
   const row4 = [
     { icon: Users, value: stats.totalUsers, title: "TOTAL USERS", onClick: () => goTab("users") },
-    { icon: Shield, value: stats.bannedUsers, title: "BANNED USERS", onClick: () => goTab("users") },
+    { icon: Shield, value: stats.bannedUsers, title: "BANNED USERS", onClick: () => goTab("bannedusers") },
     { icon: Coins, value: short(stats.circulating), title: "TOKENS CIRCULATING", onClick: () => goTab("pnl") },
     { icon: Ticket, value: stats.totalBets, title: "TOTAL BETS", onClick: () => goTab("bettracker") },
-    { icon: Trophy, value: stats.wonBets, title: "WON BETS", onClick: () => goTab("bettracker") },
+    { icon: Trophy, value: stats.wonBets, title: "WON BETS", onClick: () => goTab("wonbets") },
   ];
   const row5 = [
-    { icon: X, value: stats.lostBets, title: "LOST BETS", onClick: () => goTab("bettracker") },
+    { icon: X, value: stats.lostBets, title: "LOST BETS", onClick: () => goTab("lostbets") },
     { icon: Eye, value: stats.openBets, title: "OPEN BETS", onClick: () => goTab("bettracker") },
     { icon: Coins, value: short(stats.totalStaked), title: "TOTAL STAKED", onClick: () => goTab("pnl") },
     { icon: Wallet, value: short(stats.totalPaid), title: "TOTAL PAID OUT", onClick: () => goTab("pnl") },
@@ -2429,8 +2429,8 @@ function AnalyticsPanel() {
   ];
   const row6 = [
     { icon: Check, value: short(stats.approvedRequests), title: "TOKENS APPROVED", onClick: () => goTab("tokens") },
-    { icon: Coins, value: short(stats.credits), title: "TOKEN CREDITS", onClick: () => goTab("tokens") },
-    { icon: Coins, value: short(stats.debits), title: "TOKEN DEBITS", onClick: () => goTab("tokens") },
+    { icon: Coins, value: short(stats.credits), title: "TOKEN CREDITS", onClick: () => goTab("tokenmovement") },
+    { icon: Coins, value: short(stats.debits), title: "TOKEN DEBITS", onClick: () => goTab("tokenmovement") },
   ];
 
   const ts = (ts: string) => {
