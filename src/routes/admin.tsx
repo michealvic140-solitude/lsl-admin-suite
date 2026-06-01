@@ -91,124 +91,90 @@ function AdminPage() {
 
   return (
     <Layout>
-      <SidebarProvider>
-        <div className="flex w-full min-h-[calc(100vh-3.5rem)]">
-          <AdminSidebar
-            activeTab={activeTab}
-            onSelect={setActiveTab}
-            isAdmin={isAdmin}
-            isMod={isMod}
-            alerts={alerts}
-          />
-          <main className="flex-1 min-w-0 overflow-x-hidden">
-          <div className={`mx-auto w-full ${activeTab === "analytics" ? "max-w-[1600px]" : "max-w-[1080px]"} px-3 sm:px-4 py-4 sm:py-6 space-y-4`}>
+      <main className="w-full min-h-[calc(100vh-3.5rem)]">
+        <div className={`mx-auto w-full ${activeTab === "analytics" ? "max-w-[1600px]" : "max-w-[1080px]"} px-3 sm:px-4 py-4 sm:py-6 space-y-4`}>
           <div className="relative overflow-hidden rounded-2xl p-4 border border-primary/30 shadow-luxury bg-gradient-to-br from-card/90 via-card/70 to-primary/10 backdrop-blur-xl">
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-gold" />
             <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
             <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
             <div className="relative flex items-center gap-3 flex-wrap">
-            <SidebarTrigger className="shrink-0" />
-            <div className="h-12 w-12 rounded-2xl bg-gradient-gold text-primary-foreground grid place-items-center shadow-gold overflow-hidden ring-2 ring-primary/40">
-              <img src={lslLogo} alt="LSL" className="h-10 w-10 object-contain" />
-            </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Command center</p>
-              <h1 className="text-2xl sm:text-3xl font-bold gradient-gold-text">Admin Console</h1>
-            </div>
-            <Badge variant="outline" className={`ml-auto ${isAdmin ? "border-accent/50 text-accent" : "border-primary/50 text-primary"}`}>
-              {isAdmin ? "Admin" : "Moderator"}
-            </Badge>
-            {isAdmin && (
-              <div className="flex items-center gap-1 w-full sm:w-auto sm:ml-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-[11px]"
-                  onClick={() => { if (typeof window !== "undefined") window.location.reload(); }}
-                  title="Reload this admin page"
-                >
-                  ⟳ Reload
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-[11px]"
-                  onClick={async () => {
+              <button
+                type="button"
+                onClick={() => setActiveTab("analytics")}
+                className="h-12 w-12 rounded-2xl bg-gradient-gold text-primary-foreground grid place-items-center shadow-gold overflow-hidden ring-2 ring-primary/40 shrink-0 hover:ring-primary/70 transition"
+                title="Open analytics"
+              >
+                <img src={lslLogo} alt="LSL" className="h-10 w-10 object-contain" />
+              </button>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Command center</p>
+                <h1 className="text-2xl sm:text-3xl font-bold gradient-gold-text">Admin Console</h1>
+              </div>
+              <Badge variant="outline" className={`ml-auto ${isAdmin ? "border-accent/50 text-accent" : "border-primary/50 text-primary"}`}>
+                {isAdmin ? "Admin" : "Moderator"}
+              </Badge>
+              {isAdmin && (
+                <div className="flex items-center gap-1 w-full sm:w-auto sm:ml-2">
+                  <Button size="sm" variant="outline" className="text-[11px]" onClick={() => { if (typeof window !== "undefined") window.location.reload(); }} title="Reload this admin page">⟳ Reload</Button>
+                  <Button size="sm" variant="outline" className="text-[11px]" onClick={async () => {
                     try {
-                      if ("serviceWorker" in navigator) {
-                        const regs = await navigator.serviceWorker.getRegistrations();
-                        await Promise.all(regs.map((r) => r.unregister()));
-                      }
-                      if (typeof caches !== "undefined") {
-                        const keys = await caches.keys();
-                        await Promise.all(keys.map((k) => caches.delete(k)));
-                      }
+                      if ("serviceWorker" in navigator) { const regs = await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map((r) => r.unregister())); }
+                      if (typeof caches !== "undefined") { const keys = await caches.keys(); await Promise.all(keys.map((k) => caches.delete(k))); }
                     } catch {}
                     if (typeof window !== "undefined") window.location.reload();
-                  }}
-                  title="Clear caches & service workers, then reload"
-                >
-                  ⚡ Hard refresh
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  className="text-[11px]"
-                  onClick={async () => {
-                    const { error } = await supabase.from("app_settings").update({ force_reload_at: new Date().toISOString() }).eq("id", 1);
+                  }} title="Clear caches & service workers, then reload">⚡ Hard refresh</Button>
+                  <Button size="sm" variant="destructive" className="text-[11px]" onClick={async () => {
+                    const { error } = await (supabase as any).from("app_settings").update({ force_reload_at: new Date().toISOString() }).eq("id", 1);
                     if (error) { (await import("sonner")).toast.error(error.message); return; }
                     (await import("sonner")).toast.success("Reload broadcast sent to every active browser.");
-                  }}
-                  title="Force every logged-in browser to reload right now"
-                >
-                  📣 Broadcast reload
-                </Button>
-              </div>
-            )}
+                  }} title="Force every logged-in browser to reload right now">📣 Broadcast reload</Button>
+                </div>
+              )}
             </div>
           </div>
 
-        {isAdmin && <Stats />}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsContent value="users" className="mt-4"><UsersPanel /></TabsContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsContent value="users" className="mt-4"><UsersPanel /></TabsContent>
+            <TabsContent value="bannedusers" className="mt-4"><BannedUsersPanel /></TabsContent>
             <TabsContent value="virtual" className="mt-4"><VirtualAdminPanel /></TabsContent>
-          <TabsContent value="matches" className="mt-4"><MatchesPanel /></TabsContent>
-          <TabsContent value="events" className="mt-4"><EventsPanel /></TabsContent>
-          <TabsContent value="tokens" className="mt-4"><TokensPanel /></TabsContent>
-          <TabsContent value="withdrawals" className="mt-4"><WithdrawalsPanel /></TabsContent>
-          <TabsContent value="housewallet" className="mt-4"><HouseWalletPanel /></TabsContent>
-          <TabsContent value="leaderboard" className="mt-4"><LeaderboardAdminPanel /></TabsContent>
-          <TabsContent value="promos" className="mt-4"><PromoPanel /></TabsContent>
-          <TabsContent value="content" className="mt-4"><ContentPanel /></TabsContent>
-          <TabsContent value="tickets" className="mt-4"><TicketsPanel /></TabsContent>
-          <TabsContent value="tasks" className="mt-4"><TasksAchievementsPanel /></TabsContent>
-          <TabsContent value="challenges" className="mt-4"><ChallengesAdminPanel /></TabsContent>
-          <TabsContent value="seasons" className="mt-4"><SeasonsAdminPanel /></TabsContent>
-          <TabsContent value="bettracker" className="mt-4"><BetTrackerPanel /></TabsContent>
-          <TabsContent value="promoreqs" className="mt-4"><PromoRequestsPanel /></TabsContent>
-          <TabsContent value="appeals" className="mt-4"><AppealsPanel /></TabsContent>
-          <TabsContent value="chat" className="mt-4"><ChatMonitorPanel /></TabsContent>
-          <TabsContent value="notify" className="mt-4"><NotifyPanel /></TabsContent>
-          <TabsContent value="audit" className="mt-4"><AuditPanel /></TabsContent>
-          <TabsContent value="analytics" className="mt-4"><AnalyticsPanel /></TabsContent>
-          <TabsContent value="settings" className="mt-4"><SettingsPanel /></TabsContent>
-          <TabsContent value="adminai" className="mt-4"><AdminAILivePanel /></TabsContent>
-          <TabsContent value="risk" className="mt-4"><RiskPanel /></TabsContent>
-          <TabsContent value="pnl" className="mt-4"><PnLPanel /></TabsContent>
-          <TabsContent value="reports" className="mt-4"><ReportsPanel /></TabsContent>
-          <TabsContent value="tokenrules" className="mt-4"><TokenRulesPanel /></TabsContent>
-          <TabsContent value="broadcast" className="mt-4"><BroadcastPanel /></TabsContent>
-          <TabsContent value="activity" className="mt-4"><ActivityPanel /></TabsContent>
-          <TabsContent value="streakpush" className="mt-4"><StreakAndPushPanel /></TabsContent>
-          <TabsContent value="referrals" className="mt-4"><ReferralsAdminPanel /></TabsContent>
-          <TabsContent value="emblems" className="mt-4"><EmblemModerationPanel /></TabsContent>
-          <TabsContent value="vip" className="mt-4"><VipAdminPanel /></TabsContent>
-          <TabsContent value="spotlights" className="mt-4"><SpotlightsAdminPanel /></TabsContent>
-        </Tabs>
-          </div>
-          </main>
+            <TabsContent value="matches" className="mt-4"><MatchesPanel /></TabsContent>
+            <TabsContent value="events" className="mt-4"><EventsPanel /></TabsContent>
+            <TabsContent value="tokens" className="mt-4"><TokensPanel /></TabsContent>
+            <TabsContent value="tokenmovement" className="mt-4"><TokenMovementPanel /></TabsContent>
+            <TabsContent value="wonbets" className="mt-4"><BetsByStatusPanel status="won" /></TabsContent>
+            <TabsContent value="lostbets" className="mt-4"><BetsByStatusPanel status="lost" /></TabsContent>
+            <TabsContent value="withdrawals" className="mt-4"><WithdrawalsPanel /></TabsContent>
+            <TabsContent value="housewallet" className="mt-4"><HouseWalletPanel /></TabsContent>
+            <TabsContent value="leaderboard" className="mt-4"><LeaderboardAdminPanel /></TabsContent>
+            <TabsContent value="promos" className="mt-4"><PromoPanel /></TabsContent>
+            <TabsContent value="content" className="mt-4"><ContentPanel /></TabsContent>
+            <TabsContent value="tickets" className="mt-4"><TicketsPanel /></TabsContent>
+            <TabsContent value="tasks" className="mt-4"><TasksAchievementsPanel /></TabsContent>
+            <TabsContent value="challenges" className="mt-4"><ChallengesAdminPanel /></TabsContent>
+            <TabsContent value="seasons" className="mt-4"><SeasonsAdminPanel /></TabsContent>
+            <TabsContent value="bettracker" className="mt-4"><BetTrackerPanel /></TabsContent>
+            <TabsContent value="promoreqs" className="mt-4"><PromoRequestsPanel /></TabsContent>
+            <TabsContent value="appeals" className="mt-4"><AppealsPanel /></TabsContent>
+            <TabsContent value="chat" className="mt-4"><ChatMonitorPanel /></TabsContent>
+            <TabsContent value="notify" className="mt-4"><NotifyPanel /></TabsContent>
+            <TabsContent value="audit" className="mt-4"><AuditPanel /></TabsContent>
+            <TabsContent value="analytics" className="mt-4"><AnalyticsPanel /></TabsContent>
+            <TabsContent value="settings" className="mt-4"><SettingsPanel /></TabsContent>
+            <TabsContent value="adminai" className="mt-4"><AdminAILivePanel /></TabsContent>
+            <TabsContent value="risk" className="mt-4"><RiskPanel /></TabsContent>
+            <TabsContent value="pnl" className="mt-4"><PnLPanel /></TabsContent>
+            <TabsContent value="reports" className="mt-4"><ReportsPanel /></TabsContent>
+            <TabsContent value="tokenrules" className="mt-4"><TokenRulesPanel /></TabsContent>
+            <TabsContent value="broadcast" className="mt-4"><BroadcastPanel /></TabsContent>
+            <TabsContent value="activity" className="mt-4"><ActivityPanel /></TabsContent>
+            <TabsContent value="streakpush" className="mt-4"><StreakAndPushPanel /></TabsContent>
+            <TabsContent value="referrals" className="mt-4"><ReferralsAdminPanel /></TabsContent>
+            <TabsContent value="emblems" className="mt-4"><EmblemModerationPanel /></TabsContent>
+            <TabsContent value="vip" className="mt-4"><VipAdminPanel /></TabsContent>
+            <TabsContent value="spotlights" className="mt-4"><SpotlightsAdminPanel /></TabsContent>
+          </Tabs>
         </div>
-      </SidebarProvider>
+      </main>
     </Layout>
   );
 }
