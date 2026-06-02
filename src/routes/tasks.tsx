@@ -34,7 +34,7 @@ function TasksPage() {
   }, [user?.id]);
 
   async function claim(id: string) {
-    const { data, error } = await supabase.rpc("claim_task", { _task_id: id });
+    const { data, error } = await (supabase as any).rpc("claim_task", { _task_id: id });
     if (error) return toast.error(error.message);
     const r = data as any;
     toast.success(`+${r.reward.toLocaleString()} tokens claimed!`);

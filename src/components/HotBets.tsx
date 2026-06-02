@@ -34,7 +34,7 @@ export function HotBets() {
         .select("*")
         .order("bets_count", { ascending: false })
         .limit(50);
-      const list = (data ?? []) as Hot[];
+      const list = (data ?? []) as unknown as Hot[];
       const ids = Array.from(new Set(list.map((r) => r.match_id).filter(Boolean))) as string[];
       if (ids.length) {
         const { data: ms } = await supabase.from("matches").select("id,status,is_virtual").in("id", ids);

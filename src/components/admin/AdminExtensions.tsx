@@ -37,7 +37,7 @@ export function StreakAndPushPanel() {
 
   async function verifyXp() {
     setVerifying(true);
-    const { data, error } = await supabase.rpc("verify_xp_consistency", { _user_id: undefined });
+    const { data, error } = await (supabase as any).rpc("verify_xp_consistency", { _user_id: undefined });
     setVerifying(false);
     if (error) toast.error(error.message); else toast.success(`Checked ${(data as any)?.checked ?? 0} users · fixed ${(data as any)?.fixed ?? 0}`);
   }
@@ -267,7 +267,7 @@ export function PnLPanel() {
   const [topUsers, setTopUsers] = useState<any[]>([]);
 
   async function load() {
-    const { data: pnl } = await supabase.rpc("admin_pnl_summary", { _days: days });
+    const { data: pnl } = await (supabase as any).rpc("admin_pnl_summary", { _days: days });
     setData(pnl);
     // build daily series from house_transactions
     const since = new Date(); since.setDate(since.getDate() - days);
@@ -575,7 +575,7 @@ export function ReportsPanel() {
   const [series, setSeries] = useState<any[]>([]);
 
   async function load() {
-    const { data } = await supabase.rpc("admin_pnl_summary", { _days: days });
+    const { data } = await (supabase as any).rpc("admin_pnl_summary", { _days: days });
     setPnl(data);
     const since = new Date(Date.now() - days * 86400000).toISOString();
     const { data: bets } = await supabase.from("bets").select("created_at,stake,potential_payout,status,settled_at").gte("created_at", since);
@@ -742,26 +742,26 @@ export function ReferralsAdminPanel() {
   const [profiles, setProfiles] = useState<Record<string, any>>({});
 
   async function load() {
-    const { data: settings } = await supabase.from("app_settings").select("referral_enabled, referral_bonus_referrer, referral_bonus_referee").eq("id", 1).maybeSingle();
-    setS(settings);
+    const { data: settings } = await (supabase as any).from("app_settings").select("referral_enabled, referral_bonus_referrer, referral_bonus_referee").eq("id", 1).maybeSingle();
+    setS(settings ?? { referral_enabled: true, referral_bonus_referrer: 5000, referral_bonus_referee: 2500 });
     const { data } = await supabase.from("referrals").select("*").order("created_at", { ascending: false }).limit(200);
     setList(data ?? []);
-    const ids = Array.from(new Set((data ?? []).flatMap((r: any) => [r.referrer_id, r.referee_id])));
+    const ids = Array.from(new Set((data ?? []).flatMap((r: any) => [r.referrer_id, r.referred_id ?? r.referee_id]).filter(Boolean)));
     if (ids.length) {
-      const { data: p } = await supabase.from("profiles").select("id, full_name, ingame_name").in("id", ids);
+      const { data: p } = await supabase.from("profiles").select("id, full_name, ingame_name").in("id", ids as string[]);
       const map: any = {}; (p ?? []).forEach((x: any) => { map[x.id] = x; }); setProfiles(map);
     }
   }
   useEffect(() => { load(); }, []);
 
   async function save() {
-    const { error } = await supabase.from("app_settings").update(s).eq("id", 1);
+    const { error } = await (supabase as any).from("app_settings").update(s).eq("id", 1);
     if (error) toast.error(error.message); else toast.success("Saved");
   }
 
-  if (!s) return null;
+  if (!s) return <div className="text-sm text-muted-foreground p-4">Loading referrals…</div>;
   const totalReferrals = list.length;
-  const totalPaid = list.reduce((a, b) => a + Number(b.referrer_bonus || 0) + Number(b.referee_bonus || 0), 0);
+  const totalPaid = list.reduce((a, b: any) => a + Number(b.bonus_paid ?? b.referrer_bonus ?? 0) + Number(b.referee_bonus ?? 0), 0);
 
   return (
     <div className="space-y-4">
@@ -793,18 +793,22 @@ export function ReferralsAdminPanel() {
         <div className="font-bold mb-3">Recent referrals</div>
         <div className="space-y-2">
           {list.length === 0 && <p className="text-xs text-muted-foreground">No referrals yet.</p>}
-          {list.map((r: any) => (
-            <div key={r.id} className="flex items-center justify-between border-b border-border pb-2 text-sm">
-              <div>
-                <div className="font-semibold">{profiles[r.referrer_id]?.ingame_name || profiles[r.referrer_id]?.full_name || r.referrer_id.slice(0, 8)}</div>
-                <div className="text-[11px] text-muted-foreground">→ {profiles[r.referee_id]?.ingame_name || profiles[r.referee_id]?.full_name || r.referee_id.slice(0, 8)}</div>
+          {list.map((r: any) => {
+            const refereeId = r.referred_id ?? r.referee_id;
+            const bonus = Number(r.bonus_paid ?? r.referrer_bonus ?? 0) + Number(r.referee_bonus ?? 0);
+            return (
+              <div key={r.id} className="flex items-center justify-between border-b border-border pb-2 text-sm">
+                <div>
+                  <div className="font-semibold">{profiles[r.referrer_id]?.ingame_name || profiles[r.referrer_id]?.full_name || String(r.referrer_id ?? "").slice(0, 8)}</div>
+                  <div className="text-[11px] text-muted-foreground">→ {profiles[refereeId]?.ingame_name || profiles[refereeId]?.full_name || String(refereeId ?? "").slice(0, 8)}</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-bold text-emerald-300">+{bonus.toLocaleString()}</div>
+                  <div className="text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</div>
+                </div>
               </div>
-              <div className="text-right">
-                <div className="font-bold text-emerald-300">+{(Number(r.referrer_bonus) + Number(r.referee_bonus)).toLocaleString()}</div>
-                <div className="text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </Card>
     </div>
