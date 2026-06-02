@@ -126,6 +126,7 @@ export type Database = {
           virtual_concurrent_rounds: number
           virtual_cycle_seconds: number | null
           virtual_enabled: boolean | null
+          virtual_max_payout: number
           virtual_min_stake: number
           virtual_round_duration_seconds: number
           why_trust_us: string | null
@@ -164,6 +165,7 @@ export type Database = {
           virtual_concurrent_rounds?: number
           virtual_cycle_seconds?: number | null
           virtual_enabled?: boolean | null
+          virtual_max_payout?: number
           virtual_min_stake?: number
           virtual_round_duration_seconds?: number
           why_trust_us?: string | null
@@ -202,6 +204,7 @@ export type Database = {
           virtual_concurrent_rounds?: number
           virtual_cycle_seconds?: number | null
           virtual_enabled?: boolean | null
+          virtual_max_payout?: number
           virtual_min_stake?: number
           virtual_round_duration_seconds?: number
           why_trust_us?: string | null
@@ -520,6 +523,8 @@ export type Database = {
         Row: {
           content: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           id: string
           image_url: string | null
           room: Database["public"]["Enums"]["chat_room"]
@@ -528,6 +533,8 @@ export type Database = {
         Insert: {
           content?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           image_url?: string | null
           room: Database["public"]["Enums"]["chat_room"]
@@ -536,6 +543,8 @@ export type Database = {
         Update: {
           content?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           image_url?: string | null
           room?: Database["public"]["Enums"]["chat_room"]
@@ -1217,6 +1226,7 @@ export type Database = {
         Row: {
           auth: string | null
           created_at: string
+          enabled: boolean
           endpoint: string
           id: string
           p256dh: string | null
@@ -1225,6 +1235,7 @@ export type Database = {
         Insert: {
           auth?: string | null
           created_at?: string
+          enabled?: boolean
           endpoint: string
           id?: string
           p256dh?: string | null
@@ -1233,6 +1244,7 @@ export type Database = {
         Update: {
           auth?: string | null
           created_at?: string
+          enabled?: boolean
           endpoint?: string
           id?: string
           p256dh?: string | null
@@ -1527,18 +1539,21 @@ export type Database = {
         Row: {
           achievement_key: string
           awarded_at: string
+          code: string | null
           id: string
           user_id: string
         }
         Insert: {
           achievement_key: string
           awarded_at?: string
+          code?: string | null
           id?: string
           user_id: string
         }
         Update: {
           achievement_key?: string
           awarded_at?: string
+          code?: string | null
           id?: string
           user_id?: string
         }
@@ -1630,7 +1645,9 @@ export type Database = {
           created_at: string
           id: string
           progress: number | null
+          status: string
           task_key: string
+          title: string | null
           user_id: string
         }
         Insert: {
@@ -1638,7 +1655,9 @@ export type Database = {
           created_at?: string
           id?: string
           progress?: number | null
+          status?: string
           task_key: string
+          title?: string | null
           user_id: string
         }
         Update: {
@@ -1646,7 +1665,9 @@ export type Database = {
           created_at?: string
           id?: string
           progress?: number | null
+          status?: string
           task_key?: string
+          title?: string | null
           user_id?: string
         }
         Relationships: []
@@ -1732,18 +1753,24 @@ export type Database = {
       watchlist: {
         Row: {
           created_at: string
+          entity_id: string | null
+          entity_type: string | null
           id: string
           match_id: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
           id?: string
           match_id: string
           user_id: string
         }
         Update: {
           created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
           id?: string
           match_id?: string
           user_id?: string
