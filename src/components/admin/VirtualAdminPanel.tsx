@@ -463,7 +463,7 @@ function CycleControl() {
   }
   async function saveTimings() {
     setBusy(true);
-    const { error } = await supabase.from("app_settings").update({ virtual_round_duration_seconds: cfg.durSec, virtual_animation_seconds: cfg.animSec, virtual_max_score: cfg.maxScore }).eq("id", 1);
+    const { error } = await (supabase as any).from("app_settings").update({ virtual_round_duration_seconds: cfg.durSec, virtual_animation_seconds: cfg.animSec, virtual_max_score: cfg.maxScore }).eq("id", 1);
     setBusy(false);
     if (error) return toast.error(error.message); toast.success("Saved");
   }
