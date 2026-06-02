@@ -46,7 +46,7 @@ function AdminPage() {
   const { isAdmin, isMod, loading } = useAuth();
   const nav = useNavigate();
   const [alerts, setAlerts] = useState<Record<string, number>>({});
-  const [activeTab, setActiveTab] = useState(isAdmin ? "analytics" : "tickets");
+  const [activeTab, setActiveTab] = useState<string>("analytics");
   useEffect(() => { if (!loading && !isAdmin && !isMod) nav({ to: "/" }); }, [isAdmin, isMod, loading, nav]);
   useEffect(() => {
     if (!isAdmin) return;
@@ -2691,14 +2691,14 @@ function MetricSquare({ icon: Icon, value, title, sub, tone, compact, onClick }:
 
 function PanelBlock({ title, onView, children }: { title: string; onView?: () => void; children: React.ReactNode }) {
   return (
-    <Card className="border-primary/20 bg-card/60 p-2 sm:p-3 flex flex-col min-h-[140px]">
-      <div className="flex items-center justify-between mb-1.5">
+    <Card className="border-primary/20 bg-card/60 p-2 sm:p-3 flex flex-col aspect-square sm:aspect-auto sm:min-h-[160px] sm:max-h-[180px] overflow-hidden">
+      <div className="flex items-center justify-between mb-1.5 shrink-0">
         <div className="text-[8px] sm:text-[11px] font-bold tracking-widest text-primary">{title}</div>
         {onView && (
           <button onClick={onView} className="text-[7px] sm:text-[9px] text-primary/70 hover:text-primary">View all</button>
         )}
       </div>
-      <div className="space-y-0.5 flex-1 overflow-hidden">{children}</div>
+      <div className="space-y-0.5 flex-1 overflow-y-auto pr-1 -mr-1">{children}</div>
     </Card>
   );
 }
