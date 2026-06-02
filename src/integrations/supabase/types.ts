@@ -115,6 +115,9 @@ export type Database = {
           popup_ad_link: string | null
           popup_ad_size: string
           popup_ad_text: string | null
+          referral_bonus_referee: number
+          referral_bonus_referrer: number
+          referral_enabled: boolean
           terms_content: string | null
           updated_at: string
           vapid_private_key: string | null
@@ -150,6 +153,9 @@ export type Database = {
           popup_ad_link?: string | null
           popup_ad_size?: string
           popup_ad_text?: string | null
+          referral_bonus_referee?: number
+          referral_bonus_referrer?: number
+          referral_enabled?: boolean
           terms_content?: string | null
           updated_at?: string
           vapid_private_key?: string | null
@@ -185,6 +191,9 @@ export type Database = {
           popup_ad_link?: string | null
           popup_ad_size?: string
           popup_ad_text?: string | null
+          referral_bonus_referee?: number
+          referral_bonus_referrer?: number
+          referral_enabled?: boolean
           terms_content?: string | null
           updated_at?: string
           vapid_private_key?: string | null
