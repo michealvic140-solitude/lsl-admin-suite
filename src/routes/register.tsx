@@ -112,6 +112,7 @@ function RegisterPage() {
               </div>
             )}
             <div className="md:col-span-2"><Label>Server *</Label><Input required maxLength={60} value={f.server} onChange={(e) => set("server", e.target.value)} /></div>
+            <div className="md:col-span-2"><Label>Referral code (optional)</Label><Input maxLength={32} placeholder="Enter a friend's referral code" value={f.referral_code} onChange={(e) => set("referral_code", e.target.value.toUpperCase())} /></div>
             <div className="md:col-span-2 flex items-start gap-2 text-sm">
               <Checkbox id="terms" checked={accepted} onCheckedChange={(v) => setAccepted(!!v)} />
               <label htmlFor="terms" className="text-muted-foreground">I accept the platform terms. Virtual tokens only — not real money.</label>
