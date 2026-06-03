@@ -69,11 +69,15 @@ function RegisterPage() {
           server: f.server,
           gang_name: f.gang_name,
           gang_type: f.gang_type,
+          referral_code: f.referral_code.trim().toUpperCase() || null,
         },
       },
     });
     setLoading(false);
     if (error) return toast.error(error.message);
+    if (f.referral_code.trim()) {
+      try { await (supabase as any).rpc("apply_referral_code", { _code: f.referral_code.trim().toUpperCase() }); } catch {}
+    }
     toast.success("Account created! Check your email to verify.");
     nav({ to: "/login" });
   };
