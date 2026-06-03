@@ -790,10 +790,17 @@ export type Database = {
           is_featured: boolean
           is_virtual: boolean
           location: string | null
+          lock_time: string | null
+          locked_at: string | null
+          locked_by: string | null
           name: string
+          settled_at: string | null
+          settled_by: string | null
           start_time: string
           status: Database["public"]["Enums"]["match_status"]
           updated_at: string
+          virtual_first_blood_team_id: string | null
+          virtual_round_batch_id: string | null
           winner_team_id: string | null
         }
         Insert: {
@@ -809,10 +816,17 @@ export type Database = {
           is_featured?: boolean
           is_virtual?: boolean
           location?: string | null
+          lock_time?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
           name: string
+          settled_at?: string | null
+          settled_by?: string | null
           start_time: string
           status?: Database["public"]["Enums"]["match_status"]
           updated_at?: string
+          virtual_first_blood_team_id?: string | null
+          virtual_round_batch_id?: string | null
           winner_team_id?: string | null
         }
         Update: {
@@ -828,10 +842,17 @@ export type Database = {
           is_featured?: boolean
           is_virtual?: boolean
           location?: string | null
+          lock_time?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
           name?: string
+          settled_at?: string | null
+          settled_by?: string | null
           start_time?: string
           status?: Database["public"]["Enums"]["match_status"]
           updated_at?: string
+          virtual_first_blood_team_id?: string | null
+          virtual_round_batch_id?: string | null
           winner_team_id?: string | null
         }
         Relationships: [
@@ -1855,26 +1876,16 @@ export type Database = {
     Views: {
       hot_bets_v1: {
         Row: {
-          bet_id: string | null
-          created_at: string | null
-          id: string | null
+          avg_odds: number | null
+          bets_count: number | null
           market_name: string | null
           match_id: string | null
           match_name: string | null
-          odds: number | null
-          popularity: number | null
           selection_label: string | null
-          stake_share: number | null
           total_stake: number | null
+          users_count: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "bet_selections_bet_id_fkey"
-            columns: ["bet_id"]
-            isOneToOne: false
-            referencedRelation: "bets"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "bet_selections_match_id_fkey"
             columns: ["match_id"]
