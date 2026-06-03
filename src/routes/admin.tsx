@@ -2520,7 +2520,7 @@ function AnalyticsPanel() {
             </button>
           ))}
         </PanelBlock>
-        <PanelBlock title="LIVE GANG WARS" onView={() => nav({ to: "/matches" })}>
+        <PanelBlock title="LIVE GANG WARS" accent="gangwar" onView={() => nav({ to: "/matches" })}>
           {liveMatches.length === 0 && <div className="text-[10px] text-muted-foreground">No live wars</div>}
           {liveMatches.map((m) => (
             <button key={m.id} onClick={() => nav({ to: "/matches/$matchId", params: { matchId: m.id } })} className="w-full flex items-center justify-between text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0 hover:bg-primary/5 rounded px-1 transition">
