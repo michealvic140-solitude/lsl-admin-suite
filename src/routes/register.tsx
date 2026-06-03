@@ -37,6 +37,7 @@ function RegisterPage() {
     gang_type: "",
     gang_name: "",
     server: "LOMITA AFR",
+    referral_code: typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("ref") ?? "" : "",
   });
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
