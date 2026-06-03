@@ -2542,7 +2542,7 @@ function AnalyticsPanel() {
 
       {/* ROW 8 — Event Countdown | Broadcast Center | Quick Actions */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        <PanelBlock title="EVENT COUNTDOWN" onView={() => setActiveTabFromAnalytics(nav, "events")}>
+        <PanelBlock title="EVENT COUNTDOWN" accent="event" onView={() => setActiveTabFromAnalytics(nav, "events")}>
           {event ? (
             <button onClick={() => setActiveTabFromAnalytics(nav, "events")} className="w-full text-left hover:bg-primary/5 rounded p-1 transition space-y-1">
               <div className="text-[9px] sm:text-xs font-bold text-primary truncate">{event.title}</div>
