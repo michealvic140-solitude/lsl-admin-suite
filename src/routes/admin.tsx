@@ -2689,11 +2689,12 @@ function MetricSquare({ icon: Icon, value, title, sub, tone, compact, onClick }:
   );
 }
 
-function PanelBlock({ title, onView, children }: { title: string; onView?: () => void; children: React.ReactNode }) {
+function PanelBlock({ title, onView, children, accent }: { title: string; onView?: () => void; children: React.ReactNode; accent?: "gangwar" | "event" }) {
+  const accentClass = accent === "gangwar" ? "panel-gangwar" : accent === "event" ? "panel-event" : "border-primary/20 bg-card/60";
   return (
-    <Card className="border-primary/20 bg-card/60 p-2 sm:p-3 flex flex-col aspect-square sm:aspect-auto sm:min-h-[160px] sm:max-h-[180px] overflow-hidden">
+    <Card className={`${accentClass} p-2 sm:p-3 flex flex-col aspect-square sm:aspect-auto sm:min-h-[160px] sm:max-h-[180px] overflow-hidden`}>
       <div className="flex items-center justify-between mb-1.5 shrink-0">
-        <div className="text-[8px] sm:text-[11px] font-bold tracking-widest text-primary">{title}</div>
+        <div className={`text-[8px] sm:text-[11px] font-bold tracking-widest ${accent === "gangwar" ? "text-orange-300" : accent === "event" ? "text-violet-200" : "text-primary"}`}>{title}</div>
         {onView && (
           <button onClick={onView} className="text-[7px] sm:text-[9px] text-primary/70 hover:text-primary">View all</button>
         )}
