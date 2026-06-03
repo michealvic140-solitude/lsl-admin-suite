@@ -2520,7 +2520,7 @@ function AnalyticsPanel() {
             </button>
           ))}
         </PanelBlock>
-        <PanelBlock title="LIVE GANG WARS" onView={() => nav({ to: "/matches" })}>
+        <PanelBlock title="LIVE GANG WARS" accent="gangwar" onView={() => nav({ to: "/matches" })}>
           {liveMatches.length === 0 && <div className="text-[10px] text-muted-foreground">No live wars</div>}
           {liveMatches.map((m) => (
             <button key={m.id} onClick={() => nav({ to: "/matches/$matchId", params: { matchId: m.id } })} className="w-full flex items-center justify-between text-[9px] sm:text-xs py-1 border-b border-primary/10 last:border-0 hover:bg-primary/5 rounded px-1 transition">
@@ -2542,7 +2542,7 @@ function AnalyticsPanel() {
 
       {/* ROW 8 — Event Countdown | Broadcast Center | Quick Actions */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        <PanelBlock title="EVENT COUNTDOWN" onView={() => setActiveTabFromAnalytics(nav, "events")}>
+        <PanelBlock title="EVENT COUNTDOWN" accent="event" onView={() => setActiveTabFromAnalytics(nav, "events")}>
           {event ? (
             <button onClick={() => setActiveTabFromAnalytics(nav, "events")} className="w-full text-left hover:bg-primary/5 rounded p-1 transition space-y-1">
               <div className="text-[9px] sm:text-xs font-bold text-primary truncate">{event.title}</div>
@@ -2689,11 +2689,12 @@ function MetricSquare({ icon: Icon, value, title, sub, tone, compact, onClick }:
   );
 }
 
-function PanelBlock({ title, onView, children }: { title: string; onView?: () => void; children: React.ReactNode }) {
+function PanelBlock({ title, onView, children, accent }: { title: string; onView?: () => void; children: React.ReactNode; accent?: "gangwar" | "event" }) {
+  const accentClass = accent === "gangwar" ? "panel-gangwar" : accent === "event" ? "panel-event" : "border-primary/20 bg-card/60";
   return (
-    <Card className="border-primary/20 bg-card/60 p-2 sm:p-3 flex flex-col aspect-square sm:aspect-auto sm:min-h-[160px] sm:max-h-[180px] overflow-hidden">
+    <Card className={`${accentClass} p-2 sm:p-3 flex flex-col aspect-square sm:aspect-auto sm:min-h-[160px] sm:max-h-[180px] overflow-hidden`}>
       <div className="flex items-center justify-between mb-1.5 shrink-0">
-        <div className="text-[8px] sm:text-[11px] font-bold tracking-widest text-primary">{title}</div>
+        <div className={`text-[8px] sm:text-[11px] font-bold tracking-widest ${accent === "gangwar" ? "text-orange-300" : accent === "event" ? "text-violet-200" : "text-primary"}`}>{title}</div>
         {onView && (
           <button onClick={onView} className="text-[7px] sm:text-[9px] text-primary/70 hover:text-primary">View all</button>
         )}
