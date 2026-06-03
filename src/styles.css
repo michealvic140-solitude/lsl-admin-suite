@@ -632,3 +632,64 @@
   transform: translateX(-120%);
   animation: shimmer 7s ease-in-out infinite;
 }
+
+/* Admin panel themed accents */
+@keyframes flame-flicker {
+  0%, 100% { opacity: 0.55; transform: translateY(0) scale(1); filter: blur(8px); }
+  25% { opacity: 0.85; transform: translateY(-2px) scale(1.04); filter: blur(10px); }
+  50% { opacity: 0.45; transform: translateY(1px) scale(0.98); filter: blur(7px); }
+  75% { opacity: 0.9; transform: translateY(-3px) scale(1.06); filter: blur(11px); }
+}
+@keyframes skull-pulse {
+  0%, 100% { opacity: 0.18; transform: scale(1); }
+  50% { opacity: 0.42; transform: scale(1.08); }
+}
+@keyframes event-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+.panel-gangwar {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 50% 110%, oklch(0.62 0.24 28 / 0.35), transparent 60%),
+    radial-gradient(80% 60% at 50% 100%, oklch(0.78 0.22 55 / 0.30), transparent 70%),
+    linear-gradient(160deg, oklch(0.14 0.04 30 / 0.85), oklch(0.10 0.03 20 / 0.90)) !important;
+  border-color: oklch(0.62 0.24 28 / 0.55) !important;
+}
+.panel-gangwar::before {
+  content: ""; position: absolute; inset: -20% -10% -10% -10%;
+  background:
+    radial-gradient(60% 50% at 20% 100%, oklch(0.78 0.22 55 / 0.55), transparent 70%),
+    radial-gradient(50% 45% at 75% 100%, oklch(0.62 0.24 28 / 0.55), transparent 70%),
+    radial-gradient(40% 40% at 50% 100%, oklch(0.90 0.18 88 / 0.45), transparent 75%);
+  animation: flame-flicker 1.6s ease-in-out infinite;
+  pointer-events: none; z-index: 0;
+}
+.panel-gangwar::after {
+  content: "☠"; position: absolute; right: 8px; bottom: 4px;
+  font-size: 42px; line-height: 1; color: oklch(0.95 0.02 30);
+  text-shadow: 0 0 12px oklch(0.62 0.24 28 / 0.7);
+  animation: skull-pulse 2.2s ease-in-out infinite;
+  pointer-events: none; z-index: 0;
+}
+.panel-gangwar > * { position: relative; z-index: 1; }
+
+.panel-event {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 50% 0%, oklch(0.70 0.20 280 / 0.30), transparent 65%),
+    linear-gradient(160deg, oklch(0.15 0.06 280 / 0.85), oklch(0.10 0.05 260 / 0.92)) !important;
+  border-color: oklch(0.70 0.20 280 / 0.50) !important;
+}
+.panel-event::before {
+  content: ""; position: absolute; inset: -20%;
+  background:
+    radial-gradient(40% 35% at 30% 30%, oklch(0.82 0.18 88 / 0.45), transparent 70%),
+    radial-gradient(40% 35% at 75% 70%, oklch(0.70 0.20 280 / 0.45), transparent 70%);
+  animation: event-pulse 2.6s ease-in-out infinite;
+  pointer-events: none; z-index: 0;
+}
+.panel-event > * { position: relative; z-index: 1; }
