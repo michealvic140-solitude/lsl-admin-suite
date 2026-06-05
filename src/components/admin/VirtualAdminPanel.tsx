@@ -178,7 +178,7 @@ function LockConfirmDialog({ round, onClose }: { round: Round; onClose: () => vo
           <Button variant="ghost" onClick={onClose} disabled={busy}>Cancel</Button>
           <Button variant="destructive" disabled={busy} onClick={async () => {
             setBusy(true);
-            const { error } = await (supabase as any).rpc("admin_lock_virtual_round", { _match_id: round.id });
+            const { error } = await supabase.rpc("admin_lock_virtual_round", { _match_id: round.id });
             setBusy(false);
             if (error) return toast.error(error.message);
             toast.success("Round locked");
@@ -194,8 +194,8 @@ function RewardsSettings() {
   const [cfg, setCfg] = useState<any>({ virtual_payout_multiplier: 1, virtual_min_stake: 100000, virtual_max_stake: 10000000, virtual_max_payout: 100000000, virtual_min_selections: 1, virtual_max_selections: 20, virtual_xp_per_win: 15, virtual_win_bonus_tokens: 0 });
   const [busy, setBusy] = useState(false);
   useEffect(() => {
-    (supabase as any).from("app_settings").select("virtual_payout_multiplier,virtual_min_stake,virtual_max_stake,virtual_max_payout,virtual_min_selections,virtual_max_selections,virtual_xp_per_win,virtual_win_bonus_tokens").eq("id", 1).maybeSingle()
-      .then(({ data }: any) => { if (data) setCfg((prev: any) => ({ ...prev, ...data })); });
+    supabase.from("app_settings").select("virtual_payout_multiplier,virtual_min_stake,virtual_max_stake,virtual_max_payout,virtual_min_selections,virtual_max_selections,virtual_xp_per_win,virtual_win_bonus_tokens").eq("id", 1).maybeSingle()
+      .then(({ data }) => { if (data) setCfg((prev: any) => ({ ...prev, ...data })); });
   }, []);
   const save = async () => {
     setBusy(true);
@@ -248,7 +248,7 @@ async function createRound(cfg: Cfg) {
   const catId = await getVirtualCategoryId();
   const start = new Date(Date.now() + cfg.startInSec * 1000);
   const lock = new Date(Date.now() + cfg.lockInSec * 1000);
-  const { data: match, error } = await (supabase as any).from("matches").insert({
+  const { data: match, error } = await supabase.from("matches").insert({
     name: `${cfg.teamAName} vs ${cfg.teamBName}`,
     home_team_id: cfg.teamAId, away_team_id: cfg.teamBId,
     start_time: start.toISOString(), lock_time: lock.toISOString(),
@@ -431,7 +431,7 @@ function ResolveDialog({ round, onClose }: { round: Round; onClose: () => void }
               <Button variant="ghost" onClick={() => setStep("edit")} disabled={busy}>Back</Button>
               <Button disabled={busy} onClick={async () => {
                 setBusy(true);
-                const { error } = await (supabase as any).rpc("resolve_virtual_round", {
+                const { error } = await supabase.rpc("resolve_virtual_round", {
                   _match_id: round.id, _home_score: home, _away_score: away, _first_blood_team_id: first,
                 });
                 setBusy(false);
@@ -463,7 +463,7 @@ function CycleControl() {
   }
   async function saveTimings() {
     setBusy(true);
-    const { error } = await (supabase as any).from("app_settings").update({ virtual_round_duration_seconds: cfg.durSec, virtual_animation_seconds: cfg.animSec, virtual_max_score: cfg.maxScore }).eq("id", 1);
+    const { error } = await supabase.from("app_settings").update({ virtual_round_duration_seconds: cfg.durSec, virtual_animation_seconds: cfg.animSec, virtual_max_score: cfg.maxScore }).eq("id", 1);
     setBusy(false);
     if (error) return toast.error(error.message); toast.success("Saved");
   }
