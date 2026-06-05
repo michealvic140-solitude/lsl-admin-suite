@@ -29,14 +29,14 @@ function WatchlistPage() {
     setLoading(true);
     const { data: rows } = await supabase.from("watchlist").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
     const out: any[] = [];
-    for (const r of (rows ?? []) as any[]) {
-      if (r.entity_type === "match" && r.entity_id) {
+    for (const r of rows ?? []) {
+      if (r.entity_type === "match") {
         const { data: m } = await supabase.from("matches").select("id,name,location,status,start_time,home_team_id,away_team_id,home_score,away_score").eq("id", r.entity_id).maybeSingle();
         if (m) out.push({ ...r, match: m });
-      } else if (r.entity_type === "team" && r.entity_id) {
+      } else if (r.entity_type === "team") {
         const { data: t } = await supabase.from("teams").select("id,name,logo_url,gang_type").eq("id", r.entity_id).maybeSingle();
         if (t) out.push({ ...r, team: t });
-      } else if (r.entity_type === "player" && r.entity_id) {
+      } else if (r.entity_type === "player") {
         const { data: p } = await supabase.from("players").select("id,name,avatar_url,position,team_id").eq("id", r.entity_id).maybeSingle();
         if (p) out.push({ ...r, player: p });
       }

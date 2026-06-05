@@ -37,7 +37,7 @@ function RegisterPage() {
     gang_type: "",
     gang_name: "",
     server: "LOMITA AFR",
-    referral_code: typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("ref") ?? "" : "",
+    referral_code: "",
   });
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -75,9 +75,6 @@ function RegisterPage() {
     });
     setLoading(false);
     if (error) return toast.error(error.message);
-    if (f.referral_code.trim()) {
-      try { await (supabase as any).rpc("apply_referral_code", { _code: f.referral_code.trim().toUpperCase() }); } catch {}
-    }
     toast.success("Account created! Check your email to verify.");
     nav({ to: "/login" });
   };
@@ -112,7 +109,17 @@ function RegisterPage() {
               </div>
             )}
             <div className="md:col-span-2"><Label>Server *</Label><Input required maxLength={60} value={f.server} onChange={(e) => set("server", e.target.value)} /></div>
-            <div className="md:col-span-2"><Label>Referral code (optional)</Label><Input maxLength={32} placeholder="Enter a friend's referral code" value={f.referral_code} onChange={(e) => set("referral_code", e.target.value.toUpperCase())} /></div>
+            <div className="md:col-span-2">
+              <Label>Referral code <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Input
+                maxLength={32}
+                placeholder="LSL-XXXXXX"
+                value={f.referral_code}
+                onChange={(e) => set("referral_code", e.target.value.toUpperCase())}
+                className="font-mono uppercase"
+              />
+              <p className="text-[11px] text-muted-foreground mt-1">Got a code from another shooter? Enter it once to claim bonus tokens.</p>
+            </div>
             <div className="md:col-span-2 flex items-start gap-2 text-sm">
               <Checkbox id="terms" checked={accepted} onCheckedChange={(v) => setAccepted(!!v)} />
               <label htmlFor="terms" className="text-muted-foreground">I accept the platform terms. Virtual tokens only — not real money.</label>

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { AlertTriangle, Activity, TrendingUp, TrendingDown, Wallet, Users, Image as ImageIcon, Crown, Gift, RefreshCw, Bell, Send, Coins, Sparkles, FileDown, Heart, Bot, Loader2 } from "lucide-react";
+import { AlertTriangle, Activity, TrendingUp, TrendingDown, Wallet, Users, Image as ImageIcon, Crown, Gift, RefreshCw, Bell, Send, Coins, Sparkles, FileDown, Heart, Bot, Loader2, Share2, Copy } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar } from "recharts";
 import { useServerFn } from "@tanstack/react-start";
 import { adminAiChat } from "@/lib/admin-ai.functions";
@@ -37,7 +37,7 @@ export function StreakAndPushPanel() {
 
   async function verifyXp() {
     setVerifying(true);
-    const { data, error } = await (supabase as any).rpc("verify_xp_consistency", { _user_id: undefined });
+    const { data, error } = await supabase.rpc("verify_xp_consistency", { _user_id: undefined });
     setVerifying(false);
     if (error) toast.error(error.message); else toast.success(`Checked ${(data as any)?.checked ?? 0} users · fixed ${(data as any)?.fixed ?? 0}`);
   }
@@ -267,7 +267,7 @@ export function PnLPanel() {
   const [topUsers, setTopUsers] = useState<any[]>([]);
 
   async function load() {
-    const { data: pnl } = await (supabase as any).rpc("admin_pnl_summary", { _days: days });
+    const { data: pnl } = await supabase.rpc("admin_pnl_summary", { _days: days });
     setData(pnl);
     // build daily series from house_transactions
     const since = new Date(); since.setDate(since.getDate() - days);
@@ -527,7 +527,7 @@ export function ActivityPanel() {
   const [rows, setRows] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<Record<string, any>>({});
   async function load() {
-    const { data } = await supabase.from("user_sessions").select("*").order("last_seen", { ascending: false }).limit(100);
+    const { data } = await supabase.from("user_sessions").select("*").order("last_seen", { ascending: false }).limit(150);
     setRows(data ?? []);
     const ids = (data ?? []).map((r:any)=>r.user_id);
     if (ids.length) {
@@ -542,22 +542,33 @@ export function ActivityPanel() {
     <div className="space-y-4">
       <Card className="p-5 flex items-center gap-3">
         <Activity className="h-5 w-5 text-emerald-400" />
-        <div><div className="font-bold">Live user activity</div><div className="text-xs text-muted-foreground">Updates every 15s · {online.length} online now / {rows.length} tracked</div></div>
-        <Button size="sm" variant="outline" className="ml-auto" onClick={load}><RefreshCw className="h-3 w-3 mr-1" />Refresh</Button>
+        <div className="flex-1"><div className="font-bold">Live user activity</div><div className="text-xs text-muted-foreground">Updates every 15s · <span className="text-emerald-400 font-bold">{online.length} online</span> · {rows.length - online.length} offline · {rows.length} tracked</div></div>
+        <Button size="sm" variant="outline" onClick={load}><RefreshCw className="h-3 w-3 mr-1" />Refresh</Button>
       </Card>
       <Card className="p-3">
         <div className="space-y-1 max-h-[600px] overflow-y-auto">
           {rows.map((r) => {
             const p = profiles[r.user_id]; const isOn = new Date(r.last_seen).getTime() > onlineThreshold;
+            const device = r.device_type || (/(mobile|android|iphone|ipad)/i.test(r.user_agent || "") ? "Mobile" : "Desktop");
+            const browser = r.browser || (r.user_agent?.match(/Chrome|Firefox|Safari|Edge|Opera/)?.[0] ?? "—");
+            const os = r.os || (r.user_agent?.match(/Windows|Mac OS X|Linux|Android|iOS|iPhone OS/)?.[0] ?? "—");
             return (
               <div key={r.user_id} className="flex items-center gap-3 py-2 border-b border-border/50">
-                <span className={`h-2.5 w-2.5 rounded-full ${isOn ? "bg-emerald-400 animate-pulse" : "bg-muted"}`} />
+                <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${isOn ? "bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" : "bg-muted"}`} title={isOn ? "Online" : "Offline"} />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-bold truncate">{p?.full_name ?? "—"} <span className="text-xs text-muted-foreground">{p?.email}</span></div>
-                  <div className="text-[11px] text-muted-foreground truncate">{r.route ?? "—"} · {r.user_agent?.slice(0,60) ?? "—"}</div>
+                  <div className="text-[11px] text-muted-foreground truncate flex items-center gap-1.5 flex-wrap">
+                    <span className="text-foreground">{r.route ?? "—"}</span>
+                    <span className="opacity-50">·</span>
+                    <span className="px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-300 border border-sky-500/30 text-[9px] uppercase">{device}</span>
+                    <span className="px-1.5 py-0.5 rounded bg-violet-500/15 text-violet-300 border border-violet-500/30 text-[9px]">{browser}</span>
+                    <span className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[9px]">{os}</span>
+                    {r.ip_address && <><span className="opacity-50">·</span><span className="font-mono text-[9px]">{r.ip_address}</span></>}
+                  </div>
                 </div>
-                <Badge variant="outline" className="capitalize">{p?.vip_tier ?? "bronze"}</Badge>
-                <div className="text-[10px] text-muted-foreground w-24 text-right">{new Date(r.last_seen).toLocaleTimeString()}</div>
+                <Badge variant="outline" className={`capitalize ${isOn ? "border-emerald-500/40 text-emerald-300" : ""}`}>{isOn ? "Online" : "Offline"}</Badge>
+                <Badge variant="outline" className="capitalize hidden sm:inline-flex">{p?.vip_tier ?? "bronze"}</Badge>
+                <div className="text-[10px] text-muted-foreground w-24 text-right shrink-0">{new Date(r.last_seen).toLocaleTimeString()}</div>
               </div>
             );
           })}
@@ -575,7 +586,7 @@ export function ReportsPanel() {
   const [series, setSeries] = useState<any[]>([]);
 
   async function load() {
-    const { data } = await (supabase as any).rpc("admin_pnl_summary", { _days: days });
+    const { data } = await supabase.rpc("admin_pnl_summary", { _days: days });
     setPnl(data);
     const since = new Date(Date.now() - days * 86400000).toISOString();
     const { data: bets } = await supabase.from("bets").select("created_at,stake,potential_payout,status,settled_at").gte("created_at", since);
@@ -740,45 +751,95 @@ export function ReferralsAdminPanel() {
   const [s, setS] = useState<any>(null);
   const [list, setList] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<Record<string, any>>({});
+  const [myCode, setMyCode] = useState<string>("");
 
   async function load() {
-    const { data: settings } = await (supabase as any).from("app_settings").select("referral_enabled, referral_bonus_referrer, referral_bonus_referee").eq("id", 1).maybeSingle();
-    setS(settings ?? { referral_enabled: true, referral_bonus_referrer: 5000, referral_bonus_referee: 2500 });
+    const { data: settings } = await supabase
+      .from("app_settings")
+      .select("referral_bonus_referrer, referral_bonus_referee, xp_per_referral")
+      .eq("id", 1)
+      .maybeSingle();
+    // Always seed local state so the panel renders even if the row is missing.
+    setS(settings ?? { referral_bonus_referrer: 0, referral_bonus_referee: 0, xp_per_referral: 0 });
     const { data } = await supabase.from("referrals").select("*").order("created_at", { ascending: false }).limit(200);
     setList(data ?? []);
-    const ids = Array.from(new Set((data ?? []).flatMap((r: any) => [r.referrer_id, r.referred_id ?? r.referee_id]).filter(Boolean)));
+    const ids = Array.from(new Set((data ?? []).flatMap((r: any) => [r.referrer_id, r.referee_id])));
     if (ids.length) {
-      const { data: p } = await supabase.from("profiles").select("id, full_name, ingame_name").in("id", ids as string[]);
+      const { data: p } = await supabase.from("profiles").select("id, full_name, ingame_name").in("id", ids);
       const map: any = {}; (p ?? []).forEach((x: any) => { map[x.id] = x; }); setProfiles(map);
+    }
+    const { data: auth } = await supabase.auth.getUser();
+    if (auth?.user) {
+      const { data: me } = await supabase.from("profiles").select("referral_code").eq("id", auth.user.id).maybeSingle();
+      setMyCode((me as any)?.referral_code ?? "");
     }
   }
   useEffect(() => { load(); }, []);
 
   async function save() {
-    const { error } = await (supabase as any).from("app_settings").update(s).eq("id", 1);
+    const payload = {
+      referral_bonus_referrer: Number(s.referral_bonus_referrer ?? 0),
+      referral_bonus_referee: Number(s.referral_bonus_referee ?? 0),
+      xp_per_referral: Number(s.xp_per_referral ?? 0),
+    };
+    const { error } = await supabase.from("app_settings").update(payload).eq("id", 1);
     if (error) toast.error(error.message); else toast.success("Saved");
   }
 
-  if (!s) return <div className="text-sm text-muted-foreground p-4">Loading referrals…</div>;
+  if (!s) return null;
   const totalReferrals = list.length;
-  const totalPaid = list.reduce((a, b: any) => a + Number(b.bonus_paid ?? b.referrer_bonus ?? 0) + Number(b.referee_bonus ?? 0), 0);
+  const totalPaid = list.reduce((a, b) => a + Number(b.referrer_bonus || 0) + Number(b.referee_bonus || 0), 0);
+  const shareLink = typeof window !== "undefined" && myCode ? `${window.location.origin}/register?ref=${myCode}` : "";
+  async function shareCode() {
+    if (!shareLink) return;
+    if (typeof navigator !== "undefined" && (navigator as any).share) {
+      try { await (navigator as any).share({ title: "Join LSL", text: `Use my referral code ${myCode}`, url: shareLink }); return; } catch {}
+    }
+    navigator.clipboard.writeText(shareLink);
+    toast.success("Share link copied");
+  }
 
   return (
     <div className="space-y-4">
+      {myCode && (
+        <Card className="p-5 space-y-3 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 via-card/80 to-primary/5">
+          <div className="flex items-center gap-2"><Share2 className="h-5 w-5 text-emerald-400" /><div className="font-bold">Your admin referral link</div></div>
+          <p className="text-xs text-muted-foreground">Share this link or code with users. New sign-ups crediting it will pay both bonuses below.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] uppercase text-muted-foreground">Your code</label>
+              <div className="flex gap-2 mt-1">
+                <Input readOnly value={myCode} className="font-mono font-bold" />
+                <Button variant="outline" size="icon" onClick={() => { navigator.clipboard.writeText(myCode); toast.success("Code copied"); }} title="Copy code"><Copy className="h-4 w-4" /></Button>
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] uppercase text-muted-foreground">Share link</label>
+              <div className="flex gap-2 mt-1">
+                <Input readOnly value={shareLink} className="text-xs" />
+                <Button variant="outline" size="icon" onClick={() => { navigator.clipboard.writeText(shareLink); toast.success("Link copied"); }} title="Copy link"><Copy className="h-4 w-4" /></Button>
+                <Button size="icon" onClick={shareCode} title="Share"><Share2 className="h-4 w-4" /></Button>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <Card className="p-5 space-y-3">
         <div className="flex items-center gap-2 mb-2"><Gift className="h-5 w-5 text-primary" /><div className="font-bold">Referral system</div></div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm">Enabled globally</span>
-          <Switch checked={!!s.referral_enabled} onCheckedChange={(v) => setS({ ...s, referral_enabled: v })} />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
+        <p className="text-xs text-muted-foreground">Admin-only controls. Set the token amount granted to the referrer and the new user (referee) when a referral code is redeemed.</p>
+        <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="text-[10px] uppercase text-muted-foreground">Referrer bonus</label>
-            <Input type="number" value={s.referral_bonus_referrer} onChange={(e) => setS({ ...s, referral_bonus_referrer: Number(e.target.value) })} />
+            <label className="text-[10px] uppercase text-muted-foreground">Referrer bonus (tokens)</label>
+            <Input type="number" value={s.referral_bonus_referrer ?? 0} onChange={(e) => setS({ ...s, referral_bonus_referrer: Number(e.target.value) })} />
           </div>
           <div>
-            <label className="text-[10px] uppercase text-muted-foreground">Referee bonus</label>
-            <Input type="number" value={s.referral_bonus_referee} onChange={(e) => setS({ ...s, referral_bonus_referee: Number(e.target.value) })} />
+            <label className="text-[10px] uppercase text-muted-foreground">Referee bonus (tokens)</label>
+            <Input type="number" value={s.referral_bonus_referee ?? 0} onChange={(e) => setS({ ...s, referral_bonus_referee: Number(e.target.value) })} />
+          </div>
+          <div>
+            <label className="text-[10px] uppercase text-muted-foreground">XP per referral</label>
+            <Input type="number" value={s.xp_per_referral ?? 0} onChange={(e) => setS({ ...s, xp_per_referral: Number(e.target.value) })} />
           </div>
         </div>
         <Button onClick={save} className="btn-luxury">Save</Button>
@@ -793,22 +854,18 @@ export function ReferralsAdminPanel() {
         <div className="font-bold mb-3">Recent referrals</div>
         <div className="space-y-2">
           {list.length === 0 && <p className="text-xs text-muted-foreground">No referrals yet.</p>}
-          {list.map((r: any) => {
-            const refereeId = r.referred_id ?? r.referee_id;
-            const bonus = Number(r.bonus_paid ?? r.referrer_bonus ?? 0) + Number(r.referee_bonus ?? 0);
-            return (
-              <div key={r.id} className="flex items-center justify-between border-b border-border pb-2 text-sm">
-                <div>
-                  <div className="font-semibold">{profiles[r.referrer_id]?.ingame_name || profiles[r.referrer_id]?.full_name || String(r.referrer_id ?? "").slice(0, 8)}</div>
-                  <div className="text-[11px] text-muted-foreground">→ {profiles[refereeId]?.ingame_name || profiles[refereeId]?.full_name || String(refereeId ?? "").slice(0, 8)}</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-bold text-emerald-300">+{bonus.toLocaleString()}</div>
-                  <div className="text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</div>
-                </div>
+          {list.map((r: any) => (
+            <div key={r.id} className="flex items-center justify-between border-b border-border pb-2 text-sm">
+              <div>
+                <div className="font-semibold">{profiles[r.referrer_id]?.ingame_name || profiles[r.referrer_id]?.full_name || r.referrer_id.slice(0, 8)}</div>
+                <div className="text-[11px] text-muted-foreground">→ {profiles[r.referee_id]?.ingame_name || profiles[r.referee_id]?.full_name || r.referee_id.slice(0, 8)}</div>
               </div>
-            );
-          })}
+              <div className="text-right">
+                <div className="font-bold text-emerald-300">+{(Number(r.referrer_bonus) + Number(r.referee_bonus)).toLocaleString()}</div>
+                <div className="text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</div>
+              </div>
+            </div>
+          ))}
         </div>
       </Card>
     </div>

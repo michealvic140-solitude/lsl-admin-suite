@@ -237,7 +237,7 @@ export function SpotlightsAdminPanel() {
     const expires = form.expires_hours > 0
       ? new Date(Date.now() + form.expires_hours * 3600_000).toISOString()
       : null;
-    const { error } = await (supabase as any).from("spotlights").insert({
+    const { error } = await supabase.from("spotlights").insert({
       user_id: form.user_id,
       headline: form.headline.trim(),
       message: form.message.trim() || null,

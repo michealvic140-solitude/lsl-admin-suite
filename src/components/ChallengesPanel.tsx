@@ -45,7 +45,7 @@ export function ChallengesPanel() {
   }
 
   async function claim(p: any) {
-    const { data, error } = await (supabase as any).rpc("claim_challenge", { _progress_id: p.id });
+    const { data, error } = await supabase.rpc("claim_challenge", { _progress_id: p.id });
     if (error) return toast.error(error.message);
     const r = data as any;
     toast.success(`+${r.reward.toLocaleString()} tokens claimed!`);
