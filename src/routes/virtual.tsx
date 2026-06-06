@@ -863,163 +863,179 @@ function LiveMatchTicker({ match, animSec }: { match: VirtualMatch; animSec: num
   const showH = settled ? match.home_score : liveH;
   const showA = settled ? match.away_score : liveA;
 
-  const homeInitial = homeName.charAt(0).toUpperCase();
-  const awayInitial = awayName.charAt(0).toUpperCase();
-  // Squads — small dots representing units, arranged in two clusters facing the center
-  const homeUnits = Array.from({ length: 8 }).map((_, i) => ({
-    alive: i < aliveH,
-    x: 22 + (i % 3) * 7 + (i >= 6 ? 4 : 0),
-    y: 55 + Math.floor(i / 3) * 9,
-    hero: i === 0,
-  }));
-  const awayUnits = Array.from({ length: 8 }).map((_, i) => ({
-    alive: i < aliveA,
-    x: 78 - (i % 3) * 7 - (i >= 6 ? 4 : 0),
-    y: 30 + Math.floor(i / 3) * 9,
-    hero: i === 0,
-  }));
-
   return (
-    <div className="mt-3 mx-auto w-full max-w-sm rounded-2xl overflow-hidden shadow-gold relative"
-         style={{ background: "linear-gradient(180deg,#2563b8 0%,#1e4d96 60%,#163d7a 100%)" }}>
-      {/* Top scoreboard: home avatar + fists · VS · away avatar + fists */}
-      <div className="relative flex items-center justify-between px-2 pt-2 pb-1 gap-1 z-10">
-        <div className="flex items-center gap-1.5 rounded-md bg-[#0e2a55]/90 border border-white/15 px-1.5 py-1 shadow-md">
-          <div className="h-7 w-7 rounded bg-gradient-to-br from-amber-400 to-orange-600 grid place-items-center text-[11px] font-black text-white border border-white/30">
-            {homeInitial}
-          </div>
-          <div className="flex items-center gap-1 pr-1">
-            <span className="text-amber-300 text-[11px]">✊</span>
-            <span className="font-black text-white text-xs tabular-nums">{(showH * 60000 + 300000).toLocaleString()}</span>
-          </div>
-        </div>
-        <div className="text-yellow-400 font-black italic text-xl drop-shadow-[0_2px_0_rgba(0,0,0,0.6)] tracking-tight">VS</div>
-        <div className="flex items-center gap-1.5 rounded-md bg-[#0e2a55]/90 border border-white/15 px-1.5 py-1 shadow-md">
-          <div className="flex items-center gap-1 pl-1">
-            <span className="font-black text-white text-xs tabular-nums">{(showA * 60000 + 250000).toLocaleString()}</span>
-            <span className="text-amber-300 text-[11px]">✊</span>
-          </div>
-          <div className="h-7 w-7 rounded bg-gradient-to-br from-sky-400 to-blue-700 grid place-items-center text-[11px] font-black text-white border border-white/30">
-            {awayInitial}
-          </div>
-        </div>
-      </div>
+    <div className="mt-3 rounded-xl border border-primary/40 bg-background/50 overflow-hidden shadow-gold">
+      {/* Top-down combat zone (gang shooting battlefield) */}
+      <div className="relative w-full aspect-[16/9] overflow-hidden bg-[#0b0f0a]">
+        {/* Urban ground texture */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+            radial-gradient(circle at 20% 30%, rgba(80,60,40,0.35), transparent 40%),
+            radial-gradient(circle at 75% 70%, rgba(60,40,30,0.4), transparent 45%),
+            repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 22px),
+            repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 22px),
+            linear-gradient(180deg, #1a1410 0%, #0d0a08 100%)`,
+          }}
+        />
+        {/* Buildings / cover blocks */}
+        <div
+          className="absolute bg-black/70 border border-white/10 rounded-sm"
+          style={{ left: "18%", top: "18%", width: "14%", height: "22%" }}
+        />
+        <div
+          className="absolute bg-black/70 border border-white/10 rounded-sm"
+          style={{ left: "42%", top: "55%", width: "16%", height: "20%" }}
+        />
+        <div
+          className="absolute bg-black/70 border border-white/10 rounded-sm"
+          style={{ left: "68%", top: "20%", width: "12%", height: "28%" }}
+        />
+        <div
+          className="absolute bg-black/70 border border-white/10 rounded-sm"
+          style={{ left: "8%", top: "70%", width: "12%", height: "16%" }}
+        />
+        {/* Street median line */}
+        <div className="absolute left-1/2 top-2 bottom-2 w-px bg-gradient-to-b from-transparent via-amber-400/40 to-transparent" />
 
-      {/* Arena */}
-      <div className="relative px-3 pb-3">
-        <div className="relative w-full aspect-[4/5] overflow-hidden">
-          {/* Side LED billboard (left) */}
-          <div className="absolute left-0 top-[8%] h-[28%] w-[14%] rounded-r-md bg-gradient-to-b from-red-600 to-red-800 border border-white/10 shadow-inner overflow-hidden">
-            <div className="absolute inset-0 grid place-items-center text-white/90 font-black italic text-2xl rotate-[-8deg] opacity-80">VS</div>
-          </div>
-          {/* Warning lamp (right top) */}
-          <div className="absolute right-[6%] top-[3%] h-3 w-3 rounded-full bg-red-500 shadow-[0_0_10px_3px_rgba(255,60,60,0.7)] animate-pulse" />
+        {/* Side labels */}
+        <div className="absolute top-1 left-2 text-[9px] font-black tracking-widest text-red-400 drop-shadow">
+          RED · {homeName.toUpperCase()}
+        </div>
+        <div className="absolute top-1 right-2 text-[9px] font-black tracking-widest text-sky-400 drop-shadow">
+          {awayName.toUpperCase()} · BLUE
+        </div>
+        <div className="absolute bottom-1 left-2 text-[9px] font-mono text-red-300/80">
+          ALIVE {aliveH}
+        </div>
+        <div className="absolute bottom-1 right-2 text-[9px] font-mono text-sky-300/80">
+          ALIVE {aliveA}
+        </div>
 
-          {/* Octagonal arena floor with isometric tilt */}
+        {/* Tracers (bullet paths) */}
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          preserveAspectRatio="none"
+          viewBox="0 0 100 100"
+        >
+          <defs>
+            <filter id={`glow-${match.id}`} x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="1.4" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          {tracers.map((t, i) => (
+            <line
+              key={i}
+              x1={t.x1}
+              y1={t.y1}
+              x2={t.x2}
+              y2={t.y2}
+              stroke={t.side === "h" ? "#ff5252" : "#4dd2ff"}
+              strokeWidth="0.35"
+              strokeLinecap="round"
+              opacity={0.85}
+              style={{ filter: `drop-shadow(0 0 1.2px ${t.side === "h" ? "#ff5252" : "#4dd2ff"})` }}
+            />
+          ))}
+        </svg>
+
+        {/* Bomb / impact bursts */}
+        {blasts.map((b, i) => (
           <div
-            className="absolute left-1/2 top-[14%] -translate-x-1/2 w-[88%] h-[78%]"
-            style={{ perspective: "600px" }}
+            key={`${b.born}-${i}`}
+            className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+            style={{ left: `${b.x}%`, top: `${b.y}%` }}
           >
             <div
-              className="relative w-full h-full"
-              style={{
-                transform: "rotateX(48deg)",
-                transformStyle: "preserve-3d",
-                clipPath: "polygon(22% 0,78% 0,100% 28%,100% 72%,78% 100%,22% 100%,0 72%,0 28%)",
-                background:
-                  "linear-gradient(180deg,#e8dccb 0%,#d6c7b2 100%)",
-                boxShadow: "inset 0 0 0 4px #f5cf3a, inset 0 0 0 7px rgba(0,0,0,0.25)",
-              }}
-            >
-              {/* Tile grid */}
-              <div
-                className="absolute inset-0 opacity-50"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(rgba(0,0,0,0.15) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.15) 1px,transparent 1px)",
-                  backgroundSize: "14% 14%",
-                }}
-              />
-            </div>
+              className="rounded-full bg-amber-300/80 animate-ping"
+              style={{ width: b.size, height: b.size, animationDuration: "0.75s" }}
+            />
+            <div className="absolute inset-1 rounded-full bg-orange-500/70 blur-sm" />
           </div>
+        ))}
 
-          {/* Units overlay (not transformed for readability) */}
-          <div className="absolute inset-0">
-            {/* Tracers */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
-              {tracers.map((t, i) => (
-                <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2}
-                  stroke={t.side === "h" ? "#ffb347" : "#ffd966"} strokeWidth="0.4" strokeLinecap="round" opacity={0.9}
-                  style={{ filter: "drop-shadow(0 0 1.2px #ffcc66)" }} />
-              ))}
-            </svg>
-
-            {/* Blasts */}
-            {blasts.map((b, i) => (
-              <div key={`${b.born}-${i}`} className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                style={{ left: `${b.x}%`, top: `${b.y}%` }}>
-                <div className="rounded-full bg-amber-300/80 animate-ping" style={{ width: b.size * 0.7, height: b.size * 0.7, animationDuration: "0.7s" }} />
+        {/* Fighters */}
+        {fighters.map((f, i) => (
+          <div
+            key={i}
+            className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-200 ease-linear"
+            style={{ left: `${f.x}%`, top: `${f.y}%` }}
+          >
+            {f.alive ? (
+              <div className="relative">
+                <div
+                  className={`relative h-3.5 w-3.5 rounded-full border ${f.side === "h" ? "bg-red-500 border-red-200 shadow-[0_0_8px_#ff5252]" : "bg-sky-400 border-sky-100 shadow-[0_0_8px_#4dd2ff]"}`}
+                >
+                  <span className="absolute left-1/2 top-[-5px] h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-foreground/85" />
+                  <span
+                    className={`absolute top-1/2 h-[2px] w-3 -translate-y-1/2 ${f.side === "h" ? "left-2 bg-red-200" : "right-2 bg-sky-100"}`}
+                  />
+                </div>
+                {f.flash > 0.2 && (
+                  <div
+                    className="absolute -top-1 -left-1 h-4 w-4 rounded-full bg-amber-300/80 animate-ping"
+                    style={{ animationDuration: "0.6s" }}
+                  />
+                )}
               </div>
-            ))}
+            ) : (
+              <div className="text-[10px] leading-none text-muted-foreground/70">✕</div>
+            )}
+          </div>
+        ))}
 
-            {/* Home squad (orange/red side) */}
-            {homeUnits.map((u, i) => (
-              <Unit key={`h${i}`} x={u.x} y={u.y} alive={u.alive} hero={u.hero} color="home" />
-            ))}
-            {/* Away squad (blue side) */}
-            {awayUnits.map((u, i) => (
-              <Unit key={`a${i}`} x={u.x} y={u.y} alive={u.alive} hero={u.hero} color="away" />
-            ))}
-
-            {/* Spawn pad bottom-left */}
-            <div className="absolute left-[8%] bottom-[6%] h-3 w-3 rounded-sm bg-cyan-300 shadow-[0_0_8px_3px_rgba(80,200,255,0.7)]" />
-          </div>
-        </div>
-
-        {/* Score + progress under arena */}
-        <div className="mt-2 flex items-center justify-between px-1">
-          <div className="text-[10px] uppercase tracking-widest text-white/90 font-bold flex items-center gap-1">
-            <Sparkles className="h-3 w-3 text-yellow-300" />
-            Live
-          </div>
-          <div className="font-mono font-black text-lg tabular-nums text-yellow-300 tracking-widest drop-shadow">
-            {showH} - {showA}
-            {settled && <span className="ml-2 text-[9px] font-bold text-emerald-300 tracking-widest align-middle">FINAL</span>}
-          </div>
-        </div>
-        <div className="h-1 rounded-full bg-black/30 overflow-hidden mt-1">
-          <div className="h-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 transition-all" style={{ width: `${progress * 100}%` }} />
-        </div>
-        {feed[0] && (
-          <div className="mt-1.5 text-[10px] text-white/90 flex items-start gap-1.5 truncate">
-            <span className="text-yellow-300">▸</span>
-            <span className="truncate">{feed[0]}</span>
-          </div>
-        )}
+        {/* Smoke vignette */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 100%)",
+          }}
+        />
       </div>
-    </div>
-  );
-}
 
-function Unit({ x, y, alive, hero, color }: { x: number; y: number; alive: boolean; hero?: boolean; color: "home" | "away" }) {
-  const fill = color === "home"
-    ? "bg-gradient-to-b from-orange-400 to-red-600 border-orange-200"
-    : "bg-gradient-to-b from-sky-400 to-blue-700 border-sky-200";
-  const size = hero ? "h-4 w-4" : "h-2.5 w-2.5";
-  return (
-    <div className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${x}%`, top: `${y}%` }}>
-      {alive ? (
-        <div className="flex flex-col items-center gap-0.5">
-          <div className="h-0.5 w-4 rounded-full bg-black/40 overflow-hidden">
-            <div className={`h-full ${color === "home" ? "bg-red-400" : "bg-emerald-400"}`} style={{ width: `${hero ? 90 : 70}%` }} />
+      {/* Scoreboard + ticker */}
+      <div className="p-3 bg-gradient-to-r from-background/80 via-secondary/50 to-background/80">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-[10px] uppercase tracking-widest text-destructive font-bold flex items-center gap-1">
+            <Sparkles className="h-3 w-3" />
+            Live shootout
           </div>
-          <div className={`${size} rounded-full border ${fill} shadow-[0_2px_4px_rgba(0,0,0,0.5)]`} />
-          {/* selection ring */}
-          <div className={`absolute -bottom-0.5 left-1/2 -translate-x-1/2 ${hero ? "h-1.5 w-5" : "h-1 w-3"} rounded-[50%] ${color === "home" ? "bg-orange-300/30" : "bg-sky-300/30"} blur-[1px]`} />
+          <div className="font-mono font-black text-2xl tabular-nums text-primary tracking-widest">
+            {showH} - {showA}
+            {settled && (
+              <span className="ml-2 text-[9px] font-bold text-emerald-400 tracking-widest align-middle">
+                FINAL
+              </span>
+            )}
+          </div>
         </div>
-      ) : (
-        <div className="text-[8px] text-white/40 leading-none">✕</div>
-      )}
+        <div className="h-1 rounded-full bg-background overflow-hidden mb-2">
+          <div
+            className="h-full bg-gradient-to-r from-red-500 via-amber-400 to-sky-400 transition-all"
+            style={{ width: `${progress * 100}%` }}
+          />
+        </div>
+        <div className="space-y-1 min-h-[56px]">
+          {feed.length === 0 && (
+            <div className="text-[10px] text-muted-foreground">Gangs locking & loading…</div>
+          )}
+          {feed.map((line, i) => (
+            <div
+              key={i}
+              className="text-[11px] text-foreground/90 animate-fade-in flex items-start gap-1.5"
+            >
+              <span className="text-destructive">▸</span>
+              {line}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
