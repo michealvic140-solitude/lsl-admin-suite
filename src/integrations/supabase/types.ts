@@ -104,8 +104,11 @@ export type Database = {
           daily_login_reward: number | null
           emblem_auto_approve: boolean
           force_reload_at: string | null
+          hall_of_fame_reset_at: string | null
           hero_tagline: string | null
           id: number
+          leaderboard_gangs_reset_at: string | null
+          leaderboard_shooters_reset_at: string | null
           maintenance_message: string | null
           maintenance_mode: boolean
           max_payout: number | null
@@ -143,8 +146,11 @@ export type Database = {
           daily_login_reward?: number | null
           emblem_auto_approve?: boolean
           force_reload_at?: string | null
+          hall_of_fame_reset_at?: string | null
           hero_tagline?: string | null
           id?: number
+          leaderboard_gangs_reset_at?: string | null
+          leaderboard_shooters_reset_at?: string | null
           maintenance_message?: string | null
           maintenance_mode?: boolean
           max_payout?: number | null
@@ -182,8 +188,11 @@ export type Database = {
           daily_login_reward?: number | null
           emblem_auto_approve?: boolean
           force_reload_at?: string | null
+          hall_of_fame_reset_at?: string | null
           hero_tagline?: string | null
           id?: number
+          leaderboard_gangs_reset_at?: string | null
+          leaderboard_shooters_reset_at?: string | null
           maintenance_message?: string | null
           maintenance_mode?: boolean
           max_payout?: number | null
