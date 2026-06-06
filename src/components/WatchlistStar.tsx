@@ -36,7 +36,7 @@ export function WatchlistStar({ entityType, entityId, className = "" }: Props) {
         .eq("user_id", user.id).eq("entity_type", entityType).eq("entity_id", entityId);
       if (error) toast.error(error.message); else { setOn(false); toast.success("Removed from watchlist"); }
     } else {
-      const { error } = await supabase.from("watchlist").insert({ user_id: user.id, entity_type: entityType, entity_id: entityId });
+      const { error } = await (supabase.from("watchlist") as any).insert({ user_id: user.id, entity_type: entityType, entity_id: entityId });
       if (error) toast.error(error.message); else { setOn(true); toast.success("Added to watchlist"); }
     }
     setBusy(false);

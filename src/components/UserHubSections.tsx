@@ -255,7 +255,7 @@ export function PushNotifSettings() {
             sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(vapidKey) });
           }
           const json: any = sub.toJSON();
-          await supabase.from("push_subscriptions").upsert({
+          await (supabase.from("push_subscriptions") as any).upsert({
             user_id: user.id,
             endpoint: json.endpoint,
             p256dh: json.keys?.p256dh ?? "",

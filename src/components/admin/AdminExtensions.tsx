@@ -37,7 +37,7 @@ export function StreakAndPushPanel() {
 
   async function verifyXp() {
     setVerifying(true);
-    const { data, error } = await supabase.rpc("verify_xp_consistency", { _user_id: undefined });
+    const { data, error } = await supabase.rpc("verify_xp_consistency" as any, { _user_id: undefined } as any);
     setVerifying(false);
     if (error) toast.error(error.message); else toast.success(`Checked ${(data as any)?.checked ?? 0} users · fixed ${(data as any)?.fixed ?? 0}`);
   }
@@ -267,7 +267,7 @@ export function PnLPanel() {
   const [topUsers, setTopUsers] = useState<any[]>([]);
 
   async function load() {
-    const { data: pnl } = await supabase.rpc("admin_pnl_summary", { _days: days });
+    const { data: pnl } = await supabase.rpc("admin_pnl_summary" as any, { _days: days } as any);
     setData(pnl);
     // build daily series from house_transactions
     const since = new Date(); since.setDate(since.getDate() - days);
@@ -586,7 +586,7 @@ export function ReportsPanel() {
   const [series, setSeries] = useState<any[]>([]);
 
   async function load() {
-    const { data } = await supabase.rpc("admin_pnl_summary", { _days: days });
+    const { data } = await supabase.rpc("admin_pnl_summary" as any, { _days: days } as any);
     setPnl(data);
     const since = new Date(Date.now() - days * 86400000).toISOString();
     const { data: bets } = await supabase.from("bets").select("created_at,stake,potential_payout,status,settled_at").gte("created_at", since);
