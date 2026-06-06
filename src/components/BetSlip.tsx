@@ -65,14 +65,14 @@ function BetSlipDrawer({ open, onClose }: { open: boolean; onClose: () => void }
   const nav = useNavigate();
 
   useEffect(() => {
-    supabase.from("app_settings").select("min_stake,max_payout,virtual_min_stake,virtual_max_payout,max_selections_per_ticket,virtual_max_selections").eq("id", 1).maybeSingle()
-      .then(({ data }) => {
+    (supabase.from("app_settings") as any).select("min_stake,max_payout,virtual_min_stake,virtual_max_payout,max_selections_per_ticket,virtual_max_selections").eq("id", 1).maybeSingle()
+      .then(({ data }: any) => {
         if (data?.min_stake) setRealMinStake(Number(data.min_stake));
-        if ((data as any)?.max_payout) setRealMaxPayout(Number((data as any).max_payout));
-        if ((data as any)?.virtual_min_stake) setVirtMinStake(Number((data as any).virtual_min_stake));
-        if ((data as any)?.virtual_max_payout) setVirtMaxPayout(Number((data as any).virtual_max_payout));
-        if ((data as any)?.max_selections_per_ticket) setMaxSelReal(Number((data as any).max_selections_per_ticket));
-        if ((data as any)?.virtual_max_selections) setMaxSelVirt(Number((data as any).virtual_max_selections));
+        if (data?.max_payout) setRealMaxPayout(Number(data.max_payout));
+        if (data?.virtual_min_stake) setVirtMinStake(Number(data.virtual_min_stake));
+        if (data?.virtual_max_payout) setVirtMaxPayout(Number(data.virtual_max_payout));
+        if (data?.max_selections_per_ticket) setMaxSelReal(Number(data.max_selections_per_ticket));
+        if (data?.virtual_max_selections) setMaxSelVirt(Number(data.virtual_max_selections));
       });
   }, [open]);
 

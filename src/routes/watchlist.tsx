@@ -30,14 +30,15 @@ function WatchlistPage() {
     const { data: rows } = await supabase.from("watchlist").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
     const out: any[] = [];
     for (const r of rows ?? []) {
+      if (!r.entity_id) continue;
       if (r.entity_type === "match") {
-        const { data: m } = await supabase.from("matches").select("id,name,location,status,start_time,home_team_id,away_team_id,home_score,away_score").eq("id", r.entity_id).maybeSingle();
+        const { data: m } = await supabase.from("matches").select("id,name,location,status,start_time,home_team_id,away_team_id,home_score,away_score").eq("id", r.entity_id as string).maybeSingle();
         if (m) out.push({ ...r, match: m });
       } else if (r.entity_type === "team") {
-        const { data: t } = await supabase.from("teams").select("id,name,logo_url,gang_type").eq("id", r.entity_id).maybeSingle();
+        const { data: t } = await supabase.from("teams").select("id,name,logo_url,gang_type").eq("id", r.entity_id as string).maybeSingle();
         if (t) out.push({ ...r, team: t });
       } else if (r.entity_type === "player") {
-        const { data: p } = await supabase.from("players").select("id,name,avatar_url,position,team_id").eq("id", r.entity_id).maybeSingle();
+        const { data: p } = await supabase.from("players").select("id,name,avatar_url,position,team_id").eq("id", r.entity_id as string).maybeSingle();
         if (p) out.push({ ...r, player: p });
       }
     }

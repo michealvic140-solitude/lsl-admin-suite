@@ -3232,11 +3232,11 @@ function TasksAchievementsPanel() {
   useEffect(() => { load(); }, []);
   async function createTask() {
     if (!draft.user_id || !draft.title) { toast.error("Pick a user and enter a task title"); return; }
-    const { error } = await supabase.from("user_tasks").insert({ user_id: draft.user_id, title: draft.title, description: draft.description || null, reward_tokens: draft.reward_tokens || 0 });
+    const { error } = await (supabase.from("user_tasks") as any).insert({ user_id: draft.user_id, title: draft.title, description: draft.description || null, reward_tokens: draft.reward_tokens || 0 });
     if (error) toast.error(error.message); else { toast.success("Task assigned"); setDraft({ user_id: "", title: "", description: "", reward_tokens: 0 }); load(); }
   }
   async function markDone(task: any) {
-    await supabase.from("user_tasks").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", task.id);
+    await (supabase.from("user_tasks") as any).update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", task.id);
     if (task.reward_tokens > 0) {
       const { data: p } = await supabase.from("profiles").select("token_balance").eq("id", task.user_id).single();
       if (p) await supabase.from("profiles").update({ token_balance: (p.token_balance ?? 0) + task.reward_tokens }).eq("id", task.user_id);
@@ -3246,9 +3246,10 @@ function TasksAchievementsPanel() {
   }
   async function awardAchievement() {
     if (!ach.user_id || !ach.code || !ach.title) { toast.error("User, code and title required"); return; }
-    const { error } = await supabase.from("user_achievements").insert({
+    const { error } = await (supabase.from("user_achievements") as any).insert({
       user_id: ach.user_id, code: ach.code, title: ach.title,
       description: ach.description || null, icon: ach.icon || null,
+      achievement_key: ach.code,
     });
     if (error) { toast.error(error.message); return; }
     await supabase.from("notifications").insert({ user_id: ach.user_id, title: "Achievement unlocked! 🏆", body: `${ach.icon} ${ach.title}` });
@@ -3623,7 +3624,7 @@ function HouseWalletPanel() {
 
   async function adjust() {
     if (!adjAmt || !adjReason.trim()) { toast.error("Amount and reason required"); return; }
-    const { error } = await supabase.rpc("house_manual_adjust", { _amount: adjAmt, _reason: adjReason.trim() });
+    const { error } = await supabase.rpc("house_manual_adjust" as any, { _amount: adjAmt, _note: adjReason.trim() } as any);
     if (error) { toast.error(error.message); return; }
     toast.success("Wallet adjusted");
     setAdjustOpen(false); setAdjAmt(0); setAdjReason("");
