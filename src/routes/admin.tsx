@@ -231,6 +231,7 @@ function AdminSectionRail({ alerts, onOpen }: { alerts: Record<string, number>; 
     { tab: "withdrawals", icon: Wallet, label: "Withdrawals", count: alerts.withdrawals ?? 0, mod: false },
     { tab: "promoreqs", icon: Tag, label: "Promo requests", count: alerts.promoreqs ?? 0, mod: false },
     { tab: "appeals", icon: AlertTriangle, label: "Ban appeals", count: alerts.appeals ?? 0, mod: true },
+    { tab: "sessions", icon: Activity, label: "Login sessions", count: 0, mod: false },
   ];
   const items = isAdmin ? all : all.filter((i) => i.mod);
   return (
