@@ -70,10 +70,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
-      if (s?.user) setTimeout(() => loadUserData(s.user.id), 0);
+      if (s?.user) {
+        setTimeout(() => loadUserData(s.user.id), 0);
+        if (event === "SIGNED_IN") {
+          const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+          const ctx = detectDeviceBrowser(ua);
+          (supabase.from("user_sessions") as any).upsert({
+            user_id: s.user.id,
+            last_seen: new Date().toISOString(),
+            login_at: new Date().toISOString(),
+            route: typeof window !== "undefined" ? window.location.pathname : null,
+            user_agent: ua.slice(0, 255),
+            device: ctx.device,
+            browser: ctx.browser,
+          }, { onConflict: "user_id" }).then(() => {});
+        }
+      }
       else { setProfile(null); setRoles([]); }
     });
     supabase.auth.getSession().then(({ data: { session: s } }) => {
@@ -115,11 +130,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const ping = async () => {
       if (stopped) return;
       try {
-        await supabase.from("user_sessions").upsert({
+        const ua = navigator.userAgent;
+        const ctx = detectDeviceBrowser(ua);
+        await (supabase.from("user_sessions") as any).upsert({
           user_id: user.id,
           last_seen: new Date().toISOString(),
           route: window.location.pathname,
-          user_agent: navigator.userAgent.slice(0, 255),
+          user_agent: ua.slice(0, 255),
+          device: ctx.device,
+          browser: ctx.browser,
         }, { onConflict: "user_id" });
       } catch {}
     };
@@ -151,6 +170,19 @@ export const useAuth = () => {
   if (!c) throw new Error("useAuth must be inside AuthProvider");
   return c;
 };
+
+function detectDeviceBrowser(ua: string): { device: string; browser: string } {
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(ua);
+  const isTablet = /iPad|Tablet/i.test(ua);
+  const device = isTablet ? "Tablet" : isMobile ? "Mobile" : "Desktop";
+  let browser = "Other";
+  if (/Edg\//.test(ua)) browser = "Edge";
+  else if (/OPR\//.test(ua)) browser = "Opera";
+  else if (/Chrome\//.test(ua)) browser = "Chrome";
+  else if (/Firefox\//.test(ua)) browser = "Firefox";
+  else if (/Safari\//.test(ua)) browser = "Safari";
+  return { device, browser };
+}
 
 export const ROLE_COLORS: Record<AppRole, string> = {
   viewer: "bg-muted text-muted-foreground border-border",
