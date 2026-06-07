@@ -140,7 +140,12 @@ function AdminPage() {
             </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+          {!isAdmin && isMod && !["tickets","appeals","chat"].includes(activeTab) && (
+            <Card className="glass p-6 text-center text-sm text-muted-foreground">
+              This section is restricted to Super Admins. As an Admin, you can review tickets and ban appeals.
+            </Card>
+          )}
+          <Tabs value={activeTab} onValueChange={(v) => { if (!isAdmin && isMod && !["tickets","appeals","chat"].includes(v)) return; setActiveTab(v); }}>
             <TabsContent value="users" className="mt-4"><UsersPanel /></TabsContent>
             <TabsContent value="bannedusers" className="mt-4"><BannedUsersPanel /></TabsContent>
             <TabsContent value="virtual" className="mt-4"><VirtualAdminPanel /></TabsContent>
