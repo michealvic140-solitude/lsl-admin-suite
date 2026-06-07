@@ -3,8 +3,13 @@ import { useEffect, useMemo, useState } from "react";
 import { Layout } from "@/components/Layout";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy } from "lucide-react";
+import { Trophy, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/leaderboard")({
   head: () => ({
@@ -130,6 +135,7 @@ function Page() {
   return (
     <Layout>
       <div className="container py-10">
+        <LeaderboardBanner />
         <div className="flex items-center gap-2 mb-6">
           <Trophy className="h-7 w-7 text-primary" />
           <h1 className="text-3xl font-bold gradient-gold-text">Leaderboard</h1>
@@ -201,3 +207,115 @@ function Page() {
 
 function Th({ children, right }: { children: React.ReactNode; right?: boolean }) { return <th className={`px-4 py-3 ${right ? "text-right" : ""}`}>{children}</th>; }
 function Td({ children, right }: { children: React.ReactNode; right?: boolean }) { return <td className={`px-4 py-3 ${right ? "text-right" : ""}`}>{children}</td>; }
+
+function LeaderboardBanner() {
+  const { isAdmin } = useAuth();
+  const [banner, setBanner] = useState<{ url?: string; description?: string; link?: string }>({});
+  const [editing, setEditing] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [draftDesc, setDraftDesc] = useState("");
+  const [draftLink, setDraftLink] = useState("");
+  const [draftUrl, setDraftUrl] = useState("");
+
+  async function load() {
+    const { data } = await (supabase.from("app_settings") as any)
+      .select("leaderboard_banner_url, leaderboard_banner_description, leaderboard_banner_link")
+      .eq("id", 1).maybeSingle();
+    const d: any = data || {};
+    setBanner({ url: d.leaderboard_banner_url, description: d.leaderboard_banner_description, link: d.leaderboard_banner_link });
+    setDraftUrl(d.leaderboard_banner_url ?? "");
+    setDraftDesc(d.leaderboard_banner_description ?? "");
+    setDraftLink(d.leaderboard_banner_link ?? "");
+  }
+  useEffect(() => { load(); }, []);
+
+  async function upload(file: File) {
+    setBusy(true);
+    const path = `leaderboard/${Date.now()}-${file.name}`;
+    const { error: ue } = await supabase.storage.from("announcements").upload(path, file, { upsert: true });
+    if (ue) { setBusy(false); toast.error(ue.message); return; }
+    const { data: { publicUrl } } = supabase.storage.from("announcements").getPublicUrl(path);
+    setDraftUrl(publicUrl);
+    setBusy(false);
+    toast.success("Image uploaded — click Save to publish");
+  }
+
+  async function save() {
+    setBusy(true);
+    const { error } = await (supabase.from("app_settings") as any).update({
+      leaderboard_banner_url: draftUrl || null,
+      leaderboard_banner_description: draftDesc || null,
+      leaderboard_banner_link: draftLink || null,
+    }).eq("id", 1);
+    setBusy(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Leaderboard banner saved");
+    setEditing(false);
+    load();
+  }
+
+  async function clearBanner() {
+    setBusy(true);
+    const { error } = await (supabase.from("app_settings") as any).update({
+      leaderboard_banner_url: null, leaderboard_banner_description: null, leaderboard_banner_link: null,
+    }).eq("id", 1);
+    setBusy(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Banner removed");
+    setEditing(false); load();
+  }
+
+  if (!banner.url && !isAdmin) return null;
+
+  return (
+    <div className="mb-6">
+      {banner.url && (
+        <Card className="glass overflow-hidden border-primary/40">
+          {banner.link ? (
+            <a href={banner.link} target="_blank" rel="noreferrer">
+              <img src={banner.url} alt={banner.description ?? "Leaderboard banner"} className="w-full max-h-[480px] object-cover" />
+            </a>
+          ) : (
+            <img src={banner.url} alt={banner.description ?? "Leaderboard banner"} className="w-full max-h-[480px] object-cover" />
+          )}
+          {banner.description && (
+            <div className="p-4 text-sm leading-relaxed whitespace-pre-wrap">{banner.description}</div>
+          )}
+        </Card>
+      )}
+      {isAdmin && (
+        <div className="mt-2 flex justify-end">
+          {!editing ? (
+            <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
+              <Upload className="h-3.5 w-3.5 mr-1" />{banner.url ? "Edit banner" : "Add banner"}
+            </Button>
+          ) : (
+            <Card className="glass p-4 w-full space-y-3 border-primary/30">
+              <div className="flex items-center justify-between">
+                <div className="text-sm font-bold">Leaderboard banner</div>
+                <Button size="icon" variant="ghost" onClick={() => setEditing(false)}><X className="h-4 w-4" /></Button>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Image</label>
+                <Input type="file" accept="image/*" disabled={busy} onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); }} />
+                {draftUrl && <img src={draftUrl} alt="preview" className="mt-2 w-full max-h-60 object-cover rounded border border-border" />}
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Description</label>
+                <Textarea value={draftDesc} onChange={(e) => setDraftDesc(e.target.value)} rows={4} placeholder="Optional description shown below the image" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Optional link (clicking the image opens this)</label>
+                <Input value={draftLink} onChange={(e) => setDraftLink(e.target.value)} placeholder="https://…" />
+              </div>
+              <div className="flex justify-end gap-2">
+                {banner.url && <Button variant="destructive" size="sm" onClick={clearBanner} disabled={busy}>Remove banner</Button>}
+                <Button size="sm" onClick={save} disabled={busy || !draftUrl}>Save banner</Button>
+              </div>
+            </Card>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
