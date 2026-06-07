@@ -107,6 +107,9 @@ export type Database = {
           hall_of_fame_reset_at: string | null
           hero_tagline: string | null
           id: number
+          leaderboard_banner_description: string | null
+          leaderboard_banner_link: string | null
+          leaderboard_banner_url: string | null
           leaderboard_gangs_reset_at: string | null
           leaderboard_shooters_reset_at: string | null
           maintenance_message: string | null
@@ -149,6 +152,9 @@ export type Database = {
           hall_of_fame_reset_at?: string | null
           hero_tagline?: string | null
           id?: number
+          leaderboard_banner_description?: string | null
+          leaderboard_banner_link?: string | null
+          leaderboard_banner_url?: string | null
           leaderboard_gangs_reset_at?: string | null
           leaderboard_shooters_reset_at?: string | null
           maintenance_message?: string | null
@@ -191,6 +197,9 @@ export type Database = {
           hall_of_fame_reset_at?: string | null
           hero_tagline?: string | null
           id?: number
+          leaderboard_banner_description?: string | null
+          leaderboard_banner_link?: string | null
+          leaderboard_banner_url?: string | null
           leaderboard_gangs_reset_at?: string | null
           leaderboard_shooters_reset_at?: string | null
           maintenance_message?: string | null
@@ -1650,19 +1659,31 @@ export type Database = {
       }
       user_sessions: {
         Row: {
+          browser: string | null
+          device: string | null
+          ip_address: string | null
           last_seen: string
+          login_at: string
           route: string | null
           user_agent: string | null
           user_id: string
         }
         Insert: {
+          browser?: string | null
+          device?: string | null
+          ip_address?: string | null
           last_seen?: string
+          login_at?: string
           route?: string | null
           user_agent?: string | null
           user_id: string
         }
         Update: {
+          browser?: string | null
+          device?: string | null
+          ip_address?: string | null
           last_seen?: string
+          login_at?: string
           route?: string | null
           user_agent?: string | null
           user_id?: string
