@@ -4045,3 +4045,116 @@ function TokenMovementPanel() {
     </div>
   );
 }
+
+/* ===================== LOGIN SESSIONS PANEL ===================== */
+function SessionsPanel() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [profiles, setProfiles] = useState<Record<string, any>>({});
+  const [filter, setFilter] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [now, setNow] = useState<number>(Date.now());
+
+  async function load() {
+    setLoading(true);
+    const { data: sess } = await (supabase.from("user_sessions") as any)
+      .select("user_id,last_seen,login_at,device,browser,route,user_agent")
+      .order("last_seen", { ascending: false })
+      .limit(500);
+    const list = (sess ?? []) as any[];
+    setRows(list);
+    const ids = Array.from(new Set(list.map((r) => r.user_id).filter(Boolean)));
+    if (ids.length) {
+      const { data: p } = await supabase.from("profiles").select("id,full_name,email,avatar_url").in("id", ids);
+      const map: Record<string, any> = {};
+      (p ?? []).forEach((u: any) => { map[u.id] = u; });
+      setProfiles(map);
+    }
+    setLoading(false);
+  }
+  useEffect(() => {
+    load();
+    const t = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(t);
+  }, []);
+
+  const visible = rows.filter((r) => {
+    if (!filter) return true;
+    const p = profiles[r.user_id];
+    const q = filter.toLowerCase();
+    return (
+      (p?.full_name ?? "").toLowerCase().includes(q) ||
+      (p?.email ?? "").toLowerCase().includes(q) ||
+      (r.user_id ?? "").toLowerCase().includes(q) ||
+      (r.device ?? "").toLowerCase().includes(q) ||
+      (r.browser ?? "").toLowerCase().includes(q)
+    );
+  });
+
+  const onlineCount = rows.filter((r) => now - new Date(r.last_seen).getTime() < 90_000).length;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Activity className="h-4 w-4 text-primary" />
+        <h2 className="font-bold">Login sessions</h2>
+        <Badge variant="outline" className="ml-1 border-emerald-500/40 text-emerald-400">
+          <Circle className="h-2 w-2 mr-1 fill-emerald-400 text-emerald-400" />
+          {onlineCount} online
+        </Badge>
+        <span className="text-xs text-muted-foreground">{rows.length} total users tracked</span>
+        <div className="ml-auto flex gap-2">
+          <Input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Search name, email, ID, device…" className="w-64 h-8" />
+          <Button size="sm" variant="outline" onClick={load}><RotateCw className="h-3.5 w-3.5" /></Button>
+        </div>
+      </div>
+      <Card className="glass overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead className="border-b border-border bg-card/40">
+            <tr className="text-left uppercase tracking-widest text-[10px] text-muted-foreground">
+              <th className="px-3 py-2">User</th>
+              <th className="px-3 py-2">User ID</th>
+              <th className="px-3 py-2">Device</th>
+              <th className="px-3 py-2">Browser</th>
+              <th className="px-3 py-2">First login</th>
+              <th className="px-3 py-2">Last active</th>
+              <th className="px-3 py-2 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading && <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">Loading…</td></tr>}
+            {!loading && visible.length === 0 && <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">No sessions match.</td></tr>}
+            {visible.map((r) => {
+              const p = profiles[r.user_id];
+              const lastSeen = new Date(r.last_seen).getTime();
+              const online = now - lastSeen < 90_000;
+              return (
+                <tr key={r.user_id} className="border-b border-border/40 hover:bg-primary/5">
+                  <td className="px-3 py-2">
+                    <div className="font-semibold">{p?.full_name ?? "Unknown"}</div>
+                    <div className="text-[10px] text-muted-foreground">{p?.email}</div>
+                  </td>
+                  <td className="px-3 py-2 font-mono text-[10px] text-muted-foreground">{r.user_id}</td>
+                  <td className="px-3 py-2">{r.device ?? "—"}</td>
+                  <td className="px-3 py-2">{r.browser ?? "—"}</td>
+                  <td className="px-3 py-2">{r.login_at ? new Date(r.login_at).toLocaleString() : "—"}</td>
+                  <td className="px-3 py-2">{new Date(r.last_seen).toLocaleString()}</td>
+                  <td className="px-3 py-2 text-center">
+                    {online ? (
+                      <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40">
+                        <Circle className="h-2 w-2 mr-1 fill-emerald-400 text-emerald-400" />Online
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-muted-foreground">
+                        <Circle className="h-2 w-2 mr-1" />Offline
+                      </Badge>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </Card>
+    </div>
+  );
+}
